@@ -55,6 +55,15 @@ class symmat(list):
                     self.T[i][j][k] = [None]*(k+1)
         return self.T
         
+    def buildX(self):
+        self.T = [None]*(self.dim)
+        for i in range(0,self.dim):
+            self.T[i] = [None]*(self.dim)
+            for j in range(0,self.dim):
+                self.T[i][j] = [None]*(j+1)
+                for k in range(0,j+1):
+                    self.T[i][j][k] = [None]*(k+1)
+        
     def build2(self):
         self.B = [None]*(self.dim)
         for i in range(0,self.dim):
@@ -68,6 +77,13 @@ class symmat(list):
             return 0
         else:
             return self.T[temp[0]][temp[1]][temp[2]][temp[3]] 
+            
+    def Xgetel(self,a,b,c,d):
+        temp = sorted([b,c,d], reverse=True)
+        if a<0 or b<0 or c<0 or d<0:
+            return 0
+        else:
+            return self.T[a][temp[0]][temp[1]][temp[2]]
             
     def getel2(self,a,b):
         temp = sorted([a,b], reverse=True)

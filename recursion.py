@@ -18,8 +18,10 @@ from scipy.integrate import dblquad
 # Initial values and global definitions
 
 def w(n):
-    w = d + 2*n
-    return w
+    if n<0:
+        return d
+    else:
+        return d+2*n
 
 def x_0(d):
     x_0 = 6*(gamma(3*d/2)*(gamma(d))**2)/(gamma(2*d)*(gamma(d/2))**3)
@@ -70,13 +72,16 @@ def psi(Y):
     
 # Use chi to compute X
 def makeX(x):
-    for i in range(0,X.dim):
-        for j in range(0,i+1):
-            for k in range(0,j+1):
-                for l in range(0,k+1):
-                    X.T[i][j][k][l] = w(i)*(math.sqrt((i+1)*(i+d))*x.getel(i+1,j,k,l)/(2*(w(i)+1)) \
-                    - math.sqrt(i*(i+d-1))*x.getel(i-1,j,k,l)/(2*(w(i)-1)) \
-                    - (d-1)*w(i)*x.getel(i,j,k,l)/(2*(w(i)**2 - 1)))
+    for i in range(0,L):
+        for j in range(0,L):
+            for k in range(0,L):
+                for l in range(0,L):
+                    try:
+                        X.T[i][j][k][l] = w(i)*(math.sqrt((i+1)*(i+d))*x.getel(i+1,j,k,l)/(2*(w(i)+1)) \
+                        - math.sqrt(i*(i+d-1))*x.getel(i-1,j,k,l)/(2*(w(i)-1)) \
+                        - (d-1)*w(i)*x.getel(i,j,k,l)/(2*(w(i)**2 - 1)))
+                    except IndexError:
+                        pass
     return X
     
 # Use phi to compute Y
@@ -110,23 +115,32 @@ def makeS(X,Y):
 def makeW_00_zeros():
     for i in range(1,W_00.dim):
         for j in range(0,i+1):
-            W_00.T[i][j][0][0] = ((w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1))))*(((d-1)/2)*(((w(i-1)**2-4)/(w(i-1)**2 -1)) + ((w(j)**2)/(w(j)**2-1)) \
-            - 2*((w(0)**2+1)/(w(0)**2-1)))*W_00.getel(i-1,j,0,0) + ((w(i-1)-2)/(w(i-1)-1))*(math.sqrt((i-1)*(i+d-2)))*W_00.getel(i-2,j,0,0))
+            try:
+                print(i,j)
+                W_00.T[i][j][0][0] = (w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1)))*(((d-1)/2)*((w(i-1)**2 - 4)/(w(i-1)**2 -1) \
+                + (w(j)**2)/(w(j)**2 - 1) - 2*(w(0)**2 + 1)/(w(0)**2 - 1))*W_00.getel(i-1,j,0,0) + (w(i-1)-2)*math.sqrt((i-1)*(i+d-2))*W_00.getel(i-2,j,0,0)/(w(i-1)-1))
+                print(W_00.T)
+            except IndexError:
+                pass
     return W_00
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
 # relation when k = l, which uses the result of makeW_00_zeros().         
 def makeW_00():
     for i in range(1,W_00.dim):
-        for j in range(0,i+1):
-            for k in range(0,j+1):
-                for l in range(0,k+1):
+        for j in range(1,W_00.dim):
+            for k in range(0,W_00.dim):
+                for l in range(0,W_00.dim):
+                    print(i,j,k,l)
                     if k == l:
                         try:
                             W_00.T[i][j][l+1][l+1] = ((w(l)+1)/(w(l+1)-1))*W_00.getel(i,j,l,l)
                         except IndexError:
                             pass
                     else:
-                        W_00.T[i][j][k][l] = (1/((w(k)**2)*(w(k)**2 - w(l)**2)))*((w(k)**2)*X.getel(l,i,j,k) - (w(l)**2+1)*X.getel(k,i,j,l))
+                        try:
+                            W_00.T[i][j][k][l] = (X.Xgetel(l,i,j,k) - X.Xgetel(k,i,j,l))/(w(k)**2 - w(l)**2)
+                        except IndexError:
+                            pass
     return W_00
 
 def makeW_10():
@@ -213,19 +227,19 @@ y = rt.symmat(L+1)
 y.build()
 y.T[0][0][0][0] = y_0(d)
 psi(y)
-#print("y.T =", y.T, "\n")
+print("y.T =", y.T, "\n")
 
 """
 Using chi and psi, X and Y are computed to level L
 """
 X = rt.symmat(L)
-X.build()
+X.buildX()
 makeX(x)
-#print("X =", X.T,"\n")
+print("X =", X.T,"\n")
 Y = rt.symmat(L)
 Y.build()
 makeY(y)
-#print("Y =", Y.T,"\n")
+print("Y =", Y.T,"\n")
 
 """
 S is computed to level L using X and Y. Note that values prohibited by the restricted
@@ -243,10 +257,11 @@ Both R and T require calculating W_00 and W_10 first
 W_00 = rt.symmat(L)
 W_00.build()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
+print("W_00 =", W_00.T, "\n")
 makeW_00_zeros()
-#print("W_00 =", W_00.T, "\n")
+print("W_00 =", W_00.T, "\n")
 makeW_00()
-#print("W_00 =", W_00.T, "\n") 
+print("W_00 =", W_00.T, "\n") 
 # W_10 is computed to level L
 W_10 = rt.symmat(L)
 W_10.build()
@@ -268,7 +283,7 @@ makeR()
 """
 Finally, output the results into individual files
 """
-outputs(X,Y,R,T)
+#outputs(X,Y,R,T)
 
   
     
