@@ -42,8 +42,8 @@ class symmat(list):
     def __init__(self,dim):
         self.dim = dim
  
-# Build a symmetric list of empty entries that can be referenced by other
-# functions    
+# Build a list of empty entries corresponding to a totally
+# symmetric 4D matrix
         
     def build(self):
         self.T = [None]*(self.dim)
@@ -54,8 +54,11 @@ class symmat(list):
                 for k in range(0,j+1):
                     self.T[i][j][k] = [None]*(k+1)
         return self.T
+
+# Build a list of empty entries correponding to a 4D matrix
+# that is symmetric in the last three indices
         
-    def buildX(self):
+    def build3(self):
         self.T = [None]*(self.dim)
         for i in range(0,self.dim):
             self.T[i] = [None]*(self.dim)
@@ -63,42 +66,53 @@ class symmat(list):
                 self.T[i][j] = [None]*(j+1)
                 for k in range(0,j+1):
                     self.T[i][j][k] = [None]*(k+1)
+
+# Build a list of empty entries corresponding to a 4D matrix
+# that is symmetric in the last two indices
                     
-    def buildY(self):
+    def build2(self):
         self.T = [None]*(self.dim)
-        print(self.T)
         for i in range(0,self.dim):
             self.T[i] = [None]*(self.dim)
-            print(self.T)
             for j in range(0,self.dim):
                 self.T[i][j] = [None]*(self.dim)
-                print(self.T)
                 for k in range(0,self.dim):
-                    print(i,j,k,k+1)
                     self.T[i][j][k] = [None]*(k+1)
-        
-    def build2(self):
+
+# Build an LxL list        
+    def buildR(self):
         self.B = [None]*(self.dim)
         for i in range(0,self.dim):
-            self.B[i] = [None]*(i+1)
+            self.B[i] = [None]*(self.dim)
         return self.B
 
-# Return the symmetric element of self.T[a][b][c][d]        
+# Return the element of self.T when totally symmetric        
     def getel(self,a,b,c,d):
         temp = sorted([a,b,c,d], reverse=True)
         if a<0 or b<0 or c<0 or d<0:
             return 0
         else:
             return self.T[temp[0]][temp[1]][temp[2]][temp[3]] 
-            
-    def Xgetel(self,a,b,c,d):
+
+# Return the element of self.T when symmetric in the last three
+# indices            
+    def getel3(self,a,b,c,d):
         temp = sorted([b,c,d], reverse=True)
         if a<0 or b<0 or c<0 or d<0:
             return 0
         else:
             return self.T[a][temp[0]][temp[1]][temp[2]]
+
+# Return the element of self.T when symmetric in the last two
+# indices            
+    def getel2(self,a,b,c,d):
+        temp = sorted([c,d], reverse=True)
+        if a<0 or b<0 or c<0 or d<0:
+            return 0
+        else:
+            return self.T[a][b][temp[0]][temp[1]]
             
-    def getel2(self,a,b):
+    def getel2D(self,a,b):
         temp = sorted([a,b], reverse=True)
         return self.B[temp[0]][temp[1]]
             

@@ -98,9 +98,12 @@ def makeY(y):
         for j in range(0,L):
             for k in range(0,L):
                 for l in range(0,L):
-                    Y.T[i][j][k][l] = w(i)*w(k)*w(l)*(math.sqrt(j*(j+d-1))*y.getel(i,j-1,k,l)/(2*(w(j)-1)) \
-                    - math.sqrt((j+1)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1)) \
-                    -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1)))
+                    try:
+                        Y.T[i][j][k][l] = w(i)*w(k)*w(l)*(math.sqrt(j*(j+d-1))*y.getel(i,j-1,k,l)/(2*(w(j)-1)) \
+                        - math.sqrt((j+1)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1)) \
+                        -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1)))
+                    except IndexError:
+                        pass
     return Y
 """
 # Use X,Y to compute S
@@ -121,15 +124,12 @@ def makeS(X,Y):
 """
 # W_00 requires different recursion relations for k=l=0. Build these first.                    
 def makeW_00_zeros():
-    for i in range(1,W_00.dim):
-        for j in range(0,i+1):
-            try:
-                print(i,j)
-                W_00.T[i][j][0][0] = (w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1)))*(((d-1)/2)*((w(i-1)**2 - 4)/(w(i-1)**2 -1) \
-                + (w(j)**2)/(w(j)**2 - 1) - 2*(w(0)**2 + 1)/(w(0)**2 - 1))*W_00.getel(i-1,j,0,0) + (w(i-1)-2)*math.sqrt((i-1)*(i+d-2))*W_00.getel(i-2,j,0,0)/(w(i-1)-1))
-                print(W_00.T)
-            except IndexError:
-                pass
+    for i in range(1,L):
+        for j in range(0,L):
+            print(i,j)
+            W_00.T[i][j][0][0] = (w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1)))*(((d-1)/2)*((w(i-1)**2 - 4)/(w(i-1)**2 -1) \
+            + (w(j)**2)/(w(j)**2 - 1) - 2*(w(0)**2 + 1)/(w(0)**2 - 1))*W_00.getel2(i-1,j,0,0) + (w(i-1)-2)*math.sqrt((i-1)*(i+d-2))*W_00.getel2(i-2,j,0,0)/(w(i-1)-1))
+            W_00.T[j][i][0][0] = W_00.T[i][j][0][0]
     return W_00
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
 # relation when k = l, which uses the result of makeW_00_zeros().  
@@ -240,14 +240,12 @@ print("y.T =", y.T, "\n")
 Using chi and psi, X and Y are computed to level L
 """
 X = rt.symmat(L)
-X.buildX()
-print(X.T)
+X.build3()
 makeX(x)
 print("X =", X.T,"\n")
 Y = rt.symmat(L)
-Y.buildY()
-#Y.build()
-#makeY(y)
+Y.build2()
+makeY(y)
 print("Y =", Y.T,"\n")
 
 """
@@ -263,13 +261,15 @@ S.build()
 Both R and T require calculating W_00 and W_10 first
 """
 # W_00 is computed to level L
-"""
+
 W_00 = rt.symmat(L)
-W_00.build()
+W_00.build2()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
 print("W_00 =", W_00.T, "\n")
+print("W_00.T[%d][%d][%d][%d] = %s" % (1,0,0,0,str(W_00.getel2(1,0,0,0))))
 makeW_00_zeros()
 print("W_00 =", W_00.T, "\n")
+"""
 makeW_00()
 print("W_00 =", W_00.T, "\n") 
 # W_10 is computed to level L
