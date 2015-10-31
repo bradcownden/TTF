@@ -94,10 +94,10 @@ def makeX(x):
     
 # Use phi to compute Y
 def makeY(y):
-    for i in range(0,Y.dim):
-        for j in range(0,i+1):
-            for k in range(0,j+1):
-                for l in range(0,k+1):
+    for i in range(0,L):
+        for j in range(0,L):
+            for k in range(0,L):
+                for l in range(0,L):
                     Y.T[i][j][k][l] = w(i)*w(k)*w(l)*(math.sqrt(j*(j+d-1))*y.getel(i,j-1,k,l)/(2*(w(j)-1)) \
                     - math.sqrt((j+1)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1)) \
                     -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1)))
@@ -132,7 +132,8 @@ def makeW_00_zeros():
                 pass
     return W_00
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
-# relation when k = l, which uses the result of makeW_00_zeros().         
+# relation when k = l, which uses the result of makeW_00_zeros().  
+"""       
 def makeW_00():
     for i in range(1,W_00.dim):
         for j in range(1,W_00.dim):
@@ -147,6 +148,7 @@ def makeW_00():
                     else:
                         W_00.T[i][j][k][l] = (X.T[l][i][j][k] - X.T[k][i][j][k])/(w(k)**2 - w(l)**2)
     return W_00
+    """
 
 def makeW_10():
     for i in range(0,W_10.dim):
@@ -243,8 +245,9 @@ print(X.T)
 makeX(x)
 print("X =", X.T,"\n")
 Y = rt.symmat(L)
-Y.build()
-makeY(y)
+Y.buildY()
+#Y.build()
+#makeY(y)
 print("Y =", Y.T,"\n")
 
 """
@@ -253,13 +256,14 @@ sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S
 """
 S = rt.symmat(L)
 S.build()
-makeS(X,Y)
+#makeS(X,Y)
 #print("S =", S.T,"\n")
 
 """
 Both R and T require calculating W_00 and W_10 first
 """
 # W_00 is computed to level L
+"""
 W_00 = rt.symmat(L)
 W_00.build()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
@@ -274,9 +278,7 @@ W_10.build()
 makeW_10()
 #print("W_10 =", W_10.T, "\n")
 
-"""
 Now use the results of W_00 and W_10 to calculate R and T
-"""
 # T is computed to level L
 T = makeT()
 #print("T =", T, "\n")
@@ -286,7 +288,6 @@ R.build2()
 makeR()
 #print("R =", R.B, "\n") 
 
-"""
 Finally, output the results into individual files
 """
 #outputs(X,Y,R,T)

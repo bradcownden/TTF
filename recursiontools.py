@@ -63,6 +63,19 @@ class symmat(list):
                 self.T[i][j] = [None]*(j+1)
                 for k in range(0,j+1):
                     self.T[i][j][k] = [None]*(k+1)
+                    
+    def buildY(self):
+        self.T = [None]*(self.dim)
+        print(self.T)
+        for i in range(0,self.dim):
+            self.T[i] = [None]*(self.dim)
+            print(self.T)
+            for j in range(0,self.dim):
+                self.T[i][j] = [None]*(self.dim)
+                print(self.T)
+                for k in range(0,self.dim):
+                    print(i,j,k,k+1)
+                    self.T[i][j][k] = [None]*(k+1)
         
     def build2(self):
         self.B = [None]*(self.dim)
