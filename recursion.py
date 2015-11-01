@@ -179,20 +179,24 @@ def makeR():
     return R
 
 # Create output files of entries for X,Y,R,T listed by index value with 14 significant figures    
-def outputs(X,Y,R,T):
+def outputs(X,Y,R,T,S):
+    
     print("Caculating X,Y,R,T from the recursion relations using L=%d and d=%d" % (L,d))
+    
     with open("d3T.dat","w") as t:
         for i in range(0,len(T)):
             t.write("%d %.14e \n" %(i,T[i]))
         print("Wrote T to %s" % t.name)
+        
     with open("d3R.dat","w") as r:
         for i in range(0,R.dim):
-            for j in range(0,i+1):
+            for j in range(0,R.dim):
                 try:
                     r.write("%d %d %.14e \n" % (i,j,R.B[i][j]))
                 except TypeError:
                     r.write("%d %d None \n" % (i,j))
         print("Wrote R to %s" % r.name)
+        
     with open("d3X.dat","w") as x:
         for i in range(0,X.dim):
             for j in range(0,i+1):
@@ -200,13 +204,25 @@ def outputs(X,Y,R,T):
                     for l in range(0,k+1):
                         x.write("%d %d %d %d %.14e \n" % (i,j,k,l,X.T[i][j][k][l]))
         print("Wrote X to %s" % x.name)
+        
     with open("d3Y.dat","w") as y:
         for i in range(0,Y.dim):
-            for j in range(0,i+1):
+            for j in range(0,Y.dim):
                 for k in range(0,j+1):
                     for l in range(0,k+1):
                         y.write("%d %d %d %d %.14e \n" % (i,j,k,l,Y.T[i][j][k][l]))
         print("Wrote Y to %s" % y.name)
+        
+    with open("d3S.dat","w") as s:
+        for i in range(0,S.dim):
+            for j in range(0,S.dim):
+                for k in range(0,S.dim):
+                    for l in range(0,S.dim):
+                        try:
+                            s.write("%d %d %d %d %.14e \n" % (i,j,k,l,S.T[i][j][k][l]))
+                        except TypeError:
+                            s.write("%d %d %d %d None \n" % (i,j,k,l))
+        print("Wrote S to %s" % s.name)
     print("Done")
                     
 ######################################################################
@@ -284,14 +300,8 @@ print("R =", R.B, "\n")
 """
 Finally, output the results into individual files
 """
-#outputs(X,Y,R,T)
+outputs(X,Y,R,T,S)
 
-print(X.getel3(0,0,0,1))
-print(X.getel3(0,0,1,0))
-print(X.getel3(1,0,0,0))
-print(Y.getel2(0,0,0,1))
-print(Y.getel2(0,0,1,0))
-print(Y.getel2(0,1,0,0))
     
     
     
