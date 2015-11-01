@@ -79,6 +79,19 @@ class symmat(list):
                 for k in range(0,self.dim):
                     self.T[i][j][k] = [None]*(k+1)
 
+# Buid a list of empty entries corresponding to a 4D matrix
+# that has no symmetries
+
+    def buildnone(self):
+        self.T = [None]*(self.dim)
+        for i in range(0,self.dim):
+            self.T[i] = [None]*(self.dim)
+            for j in range(0,self.dim):
+                self.T[i][j] = [None]*(self.dim)
+                for k in range(0,self.dim):
+                    self.T[i][j][k] = [None]*(self.dim)
+                    
+
 # Build an LxL list   
      
     def buildR(self):

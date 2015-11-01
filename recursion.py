@@ -103,17 +103,17 @@ def makeY(y):
 # Use X,Y to compute S
 def makeS(X,Y):
     for i in range(0,S.dim):
-        for j in range(0,i+1):
-            for k in range(0,j+1):
-                for l in range(0,k+1):
+        for j in range(0,S.dim):
+            for k in range(0,S.dim):
+                for l in range(0,S.dim):
                     if i ==k or j==k:
                         pass
-                        #print("S[%d][%d][%d][%d] does not exist due to restricted sum" % (i,j,k,l))
+                        print("S[%d][%d][%d][%d] does not exist due to restricted sum" % (i,j,k,l))
                     else:
-                        S.T[i][j][k][l] = -(1/4)*(1/(w(i)+w(j)) + 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(j)*w(k)*X.getel(l,i,j,k) - w(l)*Y.getel(i,l,j,k)) \
-                        -(1/4)*(1/(w(i)+w(j)) + 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(j)*w(k)*w(l)*X.getel(i,j,k,l) - w(i)*Y.getel(j,i,k,l)) \
-                        -(1/4)*(1/(w(i)+w(j)) - 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(k)*w(l)*X.getel(j,i,k,l) - w(j)*Y.getel(i,j,k,l)) \
-                        -(1/4)*(1/(w(i)+w(j)) - 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(i)*w(j)*w(l)*X.getel(k,i,j,l) - w(i)*Y.getel(j,i,k,l))
+                        S.T[i][j][k][l] = -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(j)*w(k)*X.getel3(l,i,j,k) - w(l)*Y.getel2(i,l,j,k))/4 \
+                        -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(j)*w(k)*w(l)*X.getel3(i,j,k,l) - w(i)*Y.getel2(j,i,k,l))/4 \
+                        -(1/(w(i)+w(j)) - 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(k)*w(l)*X.getel3(j,i,k,l) - w(j)*Y.getel2(i,j,k,l))/4 \
+                        -(1/(w(i)+w(j)) - 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(i)*w(j)*w(l)*X.getel3(k,i,j,l) - w(k)*Y.getel2(i,k,j,l))/4
     return S
 
 # W_00 requires different recursion relations for k=l=0. Build these first.                    
@@ -249,9 +249,9 @@ S is computed to level L using X and Y. Note that values prohibited by the restr
 sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S 
 """
 S = rt.symmat(L)
-S.build()
+S.buildnone()
 makeS(X,Y)
-#print("S =", S.T,"\n")
+print("S =", S.T,"\n")
 
 """
 Both R and T require calculating W_00 and W_10 first
@@ -286,9 +286,12 @@ Finally, output the results into individual files
 """
 #outputs(X,Y,R,T)
 
-print(x.getel(0,0,0,0))
-print(x.getel(0,0,1,0))
-print(x.getel(1,0,1,0))
+print(X.getel3(0,0,0,1))
+print(X.getel3(0,0,1,0))
+print(X.getel3(1,0,0,0))
+print(Y.getel2(0,0,0,1))
+print(Y.getel2(0,0,1,0))
+print(Y.getel2(0,1,0,0))
     
     
     
