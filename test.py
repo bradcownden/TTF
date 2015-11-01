@@ -126,27 +126,31 @@ def makeS(X,Y):
 def makeW_00_zeros():
     for i in range(1,L):
         for j in range(0,L):
-            print(i,j)
             W_00.T[i][j][0][0] = (w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1)))*(((d-1)/2)*((w(i-1)**2 - 4)/(w(i-1)**2 -1) \
             + (w(j)**2)/(w(j)**2 - 1) - 2*(w(0)**2 + 1)/(w(0)**2 - 1))*W_00.getel2(i-1,j,0,0) + (w(i-1)-2)*math.sqrt((i-1)*(i+d-2))*W_00.getel2(i-2,j,0,0)/(w(i-1)-1))
             W_00.T[j][i][0][0] = W_00.T[i][j][0][0]
     return W_00
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
 # relation when k = l, which uses the result of makeW_00_zeros().  
-"""       
+    
 def makeW_00():
-    for i in range(1,W_00.dim):
-        for j in range(1,W_00.dim):
+    for i in range(0,W_00.dim):
+        for j in range(0,W_00.dim):
             for k in range(0,W_00.dim):
-                for l in range(0,W_00.dim):
+                for l in range(0,k+1):
                     print(i,j,k,l)
                     if k == l:
                         try:
-                            W_00.T[i][j][l+1][l+1] = ((w(l)+1)/(w(l+1)-1))*W_00.getel(i,j,l,l)
+                            W_00.T[i][j][l+1][l+1] = ((w(l)+1)/(w(l+1)-1))*W_00.getel2(i,j,l,l)
                         except IndexError:
+                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,l+1,l+1))
                             pass
                     else:
-                        W_00.T[i][j][k][l] = (X.T[l][i][j][k] - X.T[k][i][j][k])/(w(k)**2 - w(l)**2)
+                        try:
+                            W_00.T[i][j][k][l] = (X.getel3(l,i,j,k) - X.getel3(k,i,j,l))/(w(k)**2 - w(l)**2)
+                        except IndexError:
+                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,k,l))
+                            pass
     return W_00
     """
 
@@ -215,8 +219,7 @@ def outputs(X,Y,R,T):
                     
 ######################################################################
 ######################################################################
-     
-"""
+
 Maximum "level" to be calculated, L (non-inclusive), and number of dimensions, d
 """
 L=2
@@ -269,10 +272,11 @@ print("W_00 =", W_00.T, "\n")
 print("W_00.T[%d][%d][%d][%d] = %s" % (1,0,0,0,str(W_00.getel2(1,0,0,0))))
 makeW_00_zeros()
 print("W_00 =", W_00.T, "\n")
-"""
+
 makeW_00()
 print("W_00 =", W_00.T, "\n") 
 # W_10 is computed to level L
+"""
 W_10 = rt.symmat(L)
 W_10.build()
 makeW_10()

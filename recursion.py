@@ -72,29 +72,31 @@ def psi(Y):
     
 # Use chi to compute X
 def makeX(x):
-    for i in range(0,L):
-        for j in range(0,L):
-            for k in range(0,L):
-                for l in range(0,L):
+    for i in range(0,X.dim):
+        for j in range(0,X.dim):
+            for k in range(0,j+1):
+                for l in range(0,k+1):
                     try:
                         X.T[i][j][k][l] = w(i)*(math.sqrt((i+1)*(i+d))*x.getel(i+1,j,k,l)/(2*(w(i)+1)) \
                         - math.sqrt(i*(i+d-1))*x.getel(i-1,j,k,l)/(2*(w(i)-1)) \
                         - (d-1)*w(i)*x.getel(i,j,k,l)/(2*(w(i)**2 - 1)))
                     except IndexError:
+                        print("Index error for X.T[%d][%d][%d][%d]" % (i,j,k,l))
                         pass
     return X
     
 # Use phi to compute Y
 def makeY(y):
-    for i in range(0,L):
-        for j in range(0,L):
-            for k in range(0,L):
-                for l in range(0,L):
+    for i in range(0,Y.dim):
+        for j in range(0,Y.dim):
+            for k in range(0,Y.dim):
+                for l in range(0,k+1):
                     try:
                         Y.T[i][j][k][l] = w(i)*w(k)*w(l)*(math.sqrt(j*(j+d-1))*y.getel(i,j-1,k,l)/(2*(w(j)-1)) \
                         - math.sqrt((j+1)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1)) \
                         -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1)))
                     except IndexError:
+                        print("Index error for Y.T[%d][%d][%d][%d]" % (i,j,k,l))
                         pass
     return Y
 
@@ -125,37 +127,40 @@ def makeW_00_zeros():
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
 # relation when k = l, which uses the result of makeW_00_zeros().         
 def makeW_00():
-    for i in range(1,W_00.dim):
-        for j in range(1,W_00.dim):
+    for i in range(0,W_00.dim):
+        for j in range(0,W_00.dim):
             for k in range(0,W_00.dim):
-                for l in range(0,W_00.dim):
+                for l in range(0,k+1):
                     if k == l:
                         try:
                             W_00.T[i][j][l+1][l+1] = ((w(l)+1)/(w(l+1)-1))*W_00.getel2(i,j,l,l)
                         except IndexError:
+#                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,l+1,l+1))
                             pass
                     else:
                         try:
                             W_00.T[i][j][k][l] = (X.getel3(l,i,j,k) - X.getel3(k,i,j,l))/(w(k)**2 - w(l)**2)
                         except IndexError:
+                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,k,l))
                             pass
     return W_00
 
 def makeW_10():
     for i in range(0,W_10.dim):
-        for j in range(0,i+1):
-            for k in range(0,j+1):
+        for j in range(0,W_10.dim):
+            for k in range(0,W_10.dim):
                 for l in range(0,k+1):
                     if l == k:
-                        W_10.T[i][j][k][l] = (1/2)*(w(i)**2 + w(j)**2 -4)*W_00.getel(i,j,k,l) - (d-1)*x.getel(i,j,k,l) - X.getel(i,j,k,l)
+                        W_10.T[i][j][k][l] = (1/2)*((w(i)**2 + w(j)**2 -4)*W_00.getel2(i,j,k,l) - 2*(d-1)*x.getel(i,j,k,l) - 2*X.getel3(i,j,k,l) \
+                        -2*X.getel3(j,i,k,l) - X.getel3(k,i,j,l) - X.getel3(l,i,j,k))
                     else:
-                        W_10.T[i][j][k][l] = (1/(w(k)**2 - w(l)**2))*(Y.getel(i,k,j,l) - Y.getel(i,l,j,k))
+                        W_10.T[i][j][k][l] = (Y.getel2(i,k,j,l) - Y.getel2(i,l,j,k))/(w(k)**2 - w(l)**2)
     return W_10                    
     
 def makeT():
     T = [None]*L
     for i in range(0,L):
-        T[i] = (1/2)*(w(i)**2)*X.getel(i,i,i,i) + (3/2)*Y.getel(i,i,i,i) + 2*(w(i)**4)*W_00.getel(i,i,i,i) + 2*(w(i)**2)*W_10.getel(i,i,i,i)
+        T[i] = (w(i)**2)*X.getel3(i,i,i,i)/2 + 3*Y.getel2(i,i,i,i)/2 + 2*(w(i)**4)*W_00.getel2(i,i,i,i) + 2*(w(i)**2)*W_10.getel2(i,i,i,i)
     return T
     
 def makeR():
@@ -255,23 +260,21 @@ Both R and T require calculating W_00 and W_10 first
 W_00 = rt.symmat(L)
 W_00.build2()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
-print("W_00 =", W_00.T, "\n")
 makeW_00_zeros()
-print("W_00 =", W_00.T, "\n")
 makeW_00()
 print("W_00 =", W_00.T, "\n") 
 # W_10 is computed to level L
 W_10 = rt.symmat(L)
-W_10.build()
+W_10.build2()
 makeW_10()
-#print("W_10 =", W_10.T, "\n")
+print("W_10 =", W_10.T, "\n")
 
 """
 Now use the results of W_00 and W_10 to calculate R and T
 """
 # T is computed to level L
 T = makeT()
-#print("T =", T, "\n")
+print("T =", T, "\n")
 # R is computed to level L
 R = rt.symmat(L)
 R.buildR()
@@ -283,8 +286,7 @@ Finally, output the results into individual files
 """
 #outputs(X,Y,R,T)
 
-  
-    
+
     
     
     
