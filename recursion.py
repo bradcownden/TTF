@@ -165,17 +165,17 @@ def makeT():
     
 def makeR():
     for i in range(0,R.dim):
-        for j in range(0,i+1):
+        for j in range(0,R.dim):
             if i == j:
                 pass
-                #print("R[%d][%d] does not exist due to restricted sum" % (i,j))
+                print("R[%d][%d] does not exist due to restricted sum" % (i,j))
             else:
-                R.B[i][j] = (1/2)*((w(i)**2 + w(j)**2)/(w(j)**2 - w(i)**2))*((w(j)**2)*X.getel(i,j,j,i) - (w(i)**2)*X.getel(j,i,i,j)) \
-                + (2/(w(j)**2 - w(i)**2))*((w(j)**2)*Y.getel(i,j,i,j) - (w(i)**2)*Y.getel(j,i,j,i)) \
-                + (1/2)*(Y.getel(i,i,j,j) + Y.getel(j,j,i,i)) \
-                +(((w(i)**2)*(w(j)**2))/(w(j)**2 - w(i)**2))*(X.getel(i,j,j,i) - X.getel(j,i,j,i)) \
-                + ((w(i)**2)*(w(j)**2))*(W_00.getel(j,j,i,i) + W_00.getel(i,i,j,j)) \
-                + (w(i)**2)*(W_10.getel(j,j,i,i)) + (w(j)**2)*(W_10.getel(i,i,j,j))
+                R.B[i][j] = ((w(i)**2 + w(j)**2)/(w(j)**2 - w(i)**2))*((w(j)**2)*X.getel3(i,j,j,i) - (w(i)**2)*X.getel3(j,i,i,j))/2 \
+                + 2*((w(j)**2)*Y.getel2(i,j,i,j) - (w(i)**2)*Y.getel2(j,i,j,i))/(w(j)**2 - w(i)**2) \
+                + (Y.getel2(i,i,j,j) + Y.getel2(j,j,i,i))/2 \
+                +(w(i)**2)*(w(j)**2)*(X.getel3(i,j,j,i) - X.getel3(j,i,j,i))/(w(j)**2 - w(i)**2) \
+                + (w(i)**2)*(w(j)**2)*(W_00.getel2(j,j,i,i) + W_00.getel2(i,i,j,j)) \
+                + (w(i)**2)*(W_10.getel2(j,j,i,i)) + (w(j)**2)*(W_10.getel2(i,i,j,j))
     return R
 
 # Create output files of entries for X,Y,R,T listed by index value with 14 significant figures    
@@ -279,7 +279,7 @@ print("T =", T, "\n")
 R = rt.symmat(L)
 R.buildR()
 makeR()
-#print("R =", R.B, "\n") 
+print("R =", R.B, "\n") 
 
 """
 Finally, output the results into individual files

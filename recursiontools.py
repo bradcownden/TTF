@@ -79,14 +79,16 @@ class symmat(list):
                 for k in range(0,self.dim):
                     self.T[i][j][k] = [None]*(k+1)
 
-# Build an LxL list        
+# Build an LxL list   
+     
     def buildR(self):
         self.B = [None]*(self.dim)
         for i in range(0,self.dim):
             self.B[i] = [None]*(self.dim)
         return self.B
 
-# Return the element of self.T when totally symmetric        
+# Return the element of self.T when totally symmetric  
+      
     def getel(self,a,b,c,d):
         temp = sorted([a,b,c,d], reverse=True)
         if a<0 or b<0 or c<0 or d<0:
@@ -95,7 +97,8 @@ class symmat(list):
             return self.T[temp[0]][temp[1]][temp[2]][temp[3]] 
 
 # Return the element of self.T when symmetric in the last three
-# indices            
+# indices       
+     
     def getel3(self,a,b,c,d):
         temp = sorted([b,c,d], reverse=True)
         if a<0 or b<0 or c<0 or d<0:
@@ -104,7 +107,8 @@ class symmat(list):
             return self.T[a][temp[0]][temp[1]][temp[2]]
 
 # Return the element of self.T when symmetric in the last two
-# indices            
+# indices    
+        
     def getel2(self,a,b,c,d):
         temp = sorted([c,d], reverse=True)
         if a<0 or b<0 or c<0 or d<0:
