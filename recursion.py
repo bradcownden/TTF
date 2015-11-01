@@ -41,34 +41,34 @@ def W_00naught(d):
 ###############################################################################
 
 # Recursion relation for chi that takes rt.symmat(L) objects
-def chi(X):
-    for i in range(1,X.dim):
+def chi(x):
+    for i in range(1,x.dim):
         for j in range(0,i+1):
             for k in range(0,j+1):
                 for l in range(0,k+1):
-                    X.T[i][j][k][l] = (((2*(w(i-1)+1))/(math.sqrt((i)*(i-1+d))))*(1/(2+w(i-1) \
+                    x.T[i][j][k][l] = (((2*(w(i-1)+1))/(math.sqrt((i)*(i-1+d))))*(1/(2+w(i-1) \
                     + w(j) + w(k) + w(l))))*(((d-1)/2)*((w(j)**2)/(w(j)-1) + (w(k)**2)/(w(k)-1) \
-                    + (w(l)**2)/(w(l)-1) - ((w(i-1)**2)/(w(i-1)**2 -1))*(1+w(j)+w(k)+w(l)))*X.getel(i-1,j,k,l) \
-                    + ((w(j)*math.sqrt(j*(j+d-1)))/(w(j)-1))*X.getel(i-1,j-1,k,l) \
-                    + ((w(k)*math.sqrt(k*(k+d-1)))/(w(k)-1))*X.getel(i-1,j,k-1,l) \
-                    + ((w(l)*math.sqrt(l*(l+d-1)))/(w(l)-1))*X.getel(i-1,j,k,l-1) \
-                    - (2+w(j)+w(k)+w(l)-w(i-1))*((math.sqrt((i-1)*(i+d-2)))/(2*(w(i-1)-1)))*X.getel(i-2,j,k,l))
-    return X    
+                    + (w(l)**2)/(w(l)-1) - ((w(i-1)**2)/(w(i-1)**2 -1))*(1+w(j)+w(k)+w(l)))*x.getel(i-1,j,k,l) \
+                    + ((w(j)*math.sqrt(j*(j+d-1)))/(w(j)-1))*x.getel(i-1,j-1,k,l) \
+                    + ((w(k)*math.sqrt(k*(k+d-1)))/(w(k)-1))*x.getel(i-1,j,k-1,l) \
+                    + ((w(l)*math.sqrt(l*(l+d-1)))/(w(l)-1))*x.getel(i-1,j,k,l-1) \
+                    - (2+w(j)+w(k)+w(l)-w(i-1))*((math.sqrt((i-1)*(i+d-2)))/(2*(w(i-1)-1)))*x.getel(i-2,j,k,l))
+    return x    
 
 # Recursion relation for psi that takes rt.symmat(L) objects
-def psi(Y):
-    for i in range(1,Y.dim):
+def psi(y):
+    for i in range(1,y.dim):
         for j in range(0,i+1):
             for k in range(0,j+1):
                 for l in range(0,k+1):
-                    Y.T[i][j][k][l] = (((w(i-1)+1)/(math.sqrt((i)*(i-1+d))))*(1/(2+w(i-1) \
+                    y.T[i][j][k][l] = (((w(i-1)+1)/(math.sqrt((i)*(i-1+d))))*(1/(2+w(i-1) \
                     + w(j) + w(k) + w(l))))*(((d-1)/2)*((w(j)/(w(j)-1)) + (w(k)/(w(k)-1)) \
-                    + (w(l)/(w(l)-1)) + 6 +(w(i-1)**2-w(j)-w(k)-w(l)+2)/(w(i-1)**2 - 1))*Y.getel(i-1,j,k,l) \
-                    + ((2*w(j)*math.sqrt(j*(j+d-1)))/(w(j)-1))*Y.getel(i-1,j-1,k,l) \
-                    + ((2*w(k)*math.sqrt(k*(k+d-1)))/(w(k)-1))*Y.getel(i-1,j,k-1,l) \
-                    + ((2*w(l)*math.sqrt(l*(l+d-1)))/(w(l)-1))*Y.getel(i-1,j,k,l-1) \
-                    - (2+w(j)+w(k)+w(l)-w(i-1))*((math.sqrt((i-1)*(i+d-2)))/(w(i-1)-1))*Y.getel(i-2,j,k,l))
-    return Y
+                    + (w(l)/(w(l)-1)) + 6 +(w(i-1)**2-w(j)-w(k)-w(l)+2)/(w(i-1)**2 - 1))*y.getel(i-1,j,k,l) \
+                    + ((2*w(j)*math.sqrt(j*(j+d-1)))/(w(j)-1))*y.getel(i-1,j-1,k,l) \
+                    + ((2*w(k)*math.sqrt(k*(k+d-1)))/(w(k)-1))*y.getel(i-1,j,k-1,l) \
+                    + ((2*w(l)*math.sqrt(l*(l+d-1)))/(w(l)-1))*y.getel(i-1,j,k,l-1) \
+                    - (2+w(j)+w(k)+w(l)-w(i-1))*((math.sqrt((i-1)*(i+d-2)))/(w(i-1)-1))*y.getel(i-2,j,k,l))
+    return y
     
 # Use chi to compute X
 def makeX(x):
@@ -225,7 +225,7 @@ x = rt.symmat(L+1)
 x.build()
 x.T[0][0][0][0] = x_0(d)
 chi(x)
-#print("x.T =", x.T,"\n")
+print("x.T =", x.T,"\n")
 y = rt.symmat(L+1)
 y.build()
 y.T[0][0][0][0] = y_0(d)
@@ -286,7 +286,9 @@ Finally, output the results into individual files
 """
 #outputs(X,Y,R,T)
 
-
+print(x.getel(0,0,0,0))
+print(x.getel(0,0,1,0))
+print(x.getel(1,0,1,0))
     
     
     

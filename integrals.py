@@ -13,8 +13,6 @@ import recursiontools as rt
 from sympy import Derivative, symbols, Function, Symbol, sqrt, cos, factorial
 import scipy.integrate
 from sympy.mpmath import jacobi, gamma
-from scipy.special import gamma
-from sympy.abc import n,x
 import math
 
 ############################################################
