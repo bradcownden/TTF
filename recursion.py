@@ -35,6 +35,12 @@ def W_00naught(d):
     I = dblquad(lambda x,y: ((16*(gamma(d))**2)/((gamma(d/2))**4))*((math.cos(x))**(2*d))*((math.tan(x))**(d-1))*((math.cos(y))**(2*d+1))*(math.sin(y)), \
     0,math.pi/2, lambda x:0, lambda x:x)
     return I
+    
+def v_0(d):
+    return 2*gamma(d)/((d+1)*(gamma(d/2))**2)
+    
+def c(i):
+    return 2*math.sqrt(d-2)*math.sqrt(math.factorial(i + d -1)/math.factorial(i))/gamma(d/2)
 
 ###############################################################################
 ###############################################################################
@@ -292,7 +298,7 @@ T = makeT()
 print("T =", T, "\n")
 # R is computed to level L
 R = rt.symmat(L)
-R.buildR()
+R.build2D()
 makeR()
 print("R =", R.B, "\n") 
 

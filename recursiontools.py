@@ -94,7 +94,7 @@ class symmat(list):
 
 # Build an LxL list   
      
-    def buildR(self):
+    def build2D(self):
         self.B = [None]*(self.dim)
         for i in range(0,self.dim):
             self.B[i] = [None]*(self.dim)
