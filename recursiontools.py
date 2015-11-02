@@ -130,8 +130,10 @@ class symmat(list):
             return self.T[a][b][temp[0]][temp[1]]
             
     def getel2D(self,a,b):
-        temp = sorted([a,b], reverse=True)
-        return self.B[temp[0]][temp[1]]
+        if a<0 or b<0:
+            return 0
+        else:
+            return self.B[a][b]
             
 ############################################################################        
 ############################################################################        
