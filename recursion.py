@@ -28,8 +28,7 @@ def x_0(d):
     return x_0
     
 def y_0(d):
-    y_0 = (8*gamma((3*d/2)-(1/2))*gamma((d/2)+(5/2))*(gamma(d))**2)\
-    /(gamma(2*d+2)*(gamma(d/2))**4)
+    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2) - 1)*(gamma(d/2 - 1/2))**2)/(math.pi*gamma(2*d)*gamma(d/2))
     return y_0
     
 def W_00naught(d):
@@ -246,7 +245,7 @@ y = rt.symmat(L+1)
 y.build()
 y.T[0][0][0][0] = y_0(d)
 psi(y)
-#print("y.T =", y.T, "\n")
+print("y.T =", y.T, "\n")
 
 """
 Using chi and psi, X and Y are computed to level L
