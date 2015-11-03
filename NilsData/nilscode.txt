@@ -1,0 +1,67 @@
+#include <boost/math/special_functions/digamma.hpp>
+
+template<class T>
+T sqr(T a) {
+  return a * a;
+}
+
+std::vector<double> ComputeA(int j_max) {
+  std::vector<double> A(j_max);
+  double digammahalf = boost::math::digamma(0.5);
+  for (int j = 0; j < j_max; ++j)
+    A[j] =
+        sqr(2. * j + 3.) / (2. * M_PI * (j + 1) * (j + 2)) *
+        ((4. * j * (j + 3) + 7) * (boost::math::digamma(j + 1.5) - digammahalf) +
+         (2. * sqr(j + 1.) *
+          (-2. * (j - 4.) * j * j - 2. * j * j * (j + 8.) +
+           j * (2. * j * (j + 4.) - 3.) + 2. * j * j * j - 3. * j - 13.)) /
+             (2. * j + 3.));
+  return A;
+}
+
+std::vector<double> ComputeV(int j_max) {
+  std::vector<double> V(j_max);
+  double digammahalf = boost::math::digamma(0.5);
+  for (int j = 0; j < j_max; ++j)
+    V[j] =
+        1. / (2. * M_PI * (j + 1) * (j + 2)) *
+        (sqr(2. * j + 3.) * (boost::math::digamma(j + 0.5) - digammahalf) -
+         (2. * j + 3.) - j * (j + 2.) - (j + 1) * (j + 2) +
+         (6. - 8. * j * (j + 1)) / (2. * j + 1.) + 4. * (3. * j + 4.));
+  return V;
+}
+
+void WriteCoefficients(const std::vector<double>& A,
+                       const std::vector<double>& V, const int j_max) {
+  char name[255];
+  // A coefficients
+  FILE* AFile;
+  sprintf(name, "A.dat");
+  AFile = fopen(name, "w");
+
+  for (int i = 0; i < j_max; ++i) {
+    fprintf(AFile, "%d %1.14e\n", i, A[i]);
+  }
+  fclose(AFile);
+
+  // A coefficients
+  FILE* VFile;
+  sprintf(name, "V.dat");
+  VFile = fopen(name, "w");
+
+  for (int i = 0; i < j_max; ++i) {
+    fprintf(VFile, "%d %1.14e\n", i, V[i]);
+  }
+  fclose(VFile);
+}
+
+
+int main(int argc, char *argv[])
+{
+  int j_max = 30;
+  std::vector<double> A = ComputeA(j_max);
+  std::vector<double> V = ComputeV(j_max);
+  WriteCoefficients(A, V, j_max);
+  return 0;
+}
+
