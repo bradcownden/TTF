@@ -66,13 +66,11 @@ def psi(y):
         for j in range(0,i+1):
             for k in range(0,j+1):
                 for l in range(0,k+1):
-                    y.T[i][j][k][l] = (((w(i-1)+1)/(math.sqrt((i)*(i-1+d))))*(1/(2+w(i-1) \
-                    + w(j) + w(k) + w(l))))*(((d-1)/2)*((w(j)/(w(j)-1)) + (w(k)/(w(k)-1)) \
-                    + (w(l)/(w(l)-1)) + 6 +(w(i-1)**2-w(j)-w(k)-w(l)+2)/(w(i-1)**2 - 1))*y.getel(i-1,j,k,l) \
-                    + ((2*w(j)*math.sqrt(j*(j+d-1)))/(w(j)-1))*y.getel(i-1,j-1,k,l) \
-                    + ((2*w(k)*math.sqrt(k*(k+d-1)))/(w(k)-1))*y.getel(i-1,j,k-1,l) \
-                    + ((2*w(l)*math.sqrt(l*(l+d-1)))/(w(l)-1))*y.getel(i-1,j,k,l-1) \
-                    - (2+w(j)+w(k)+w(l)-w(i-1))*((math.sqrt((i-1)*(i+d-2)))/(w(i-1)-1))*y.getel(i-2,j,k,l))
+                    y.T[i][j][k][l] = 2*(w(i-1)+1)*(-(d-1)*((w(i-1)**2 -2 -w(j)-w(k)-w(l))/(w(i-1)**2 -1) - 6 + w(j)/(w(j)-1) \
+                    + w(k)/(w(k)-1) + w(l)/(w(l)-1))*y.getel(i-1,j,k,l)/2 + (w(i-1)-w(j)-w(k)-w(l)-2)*math.sqrt((i-1)*(i+d-2))*y.getel(i-2,j,k,l)/(2*(w(i-1)-1)) \
+                    + w(j)*math.sqrt(j*(j+d-1))*y.getel(i-1,j-1,k,l)/(w(j)-1) \
+                    + w(k)*math.sqrt(k*(k+d-1))*y.getel(i-1,j,k-1,l)/(w(k)-1) \
+                    + w(l)*math.sqrt(l*(l+d-1))*y.getel(i-1,j,k,l-1)/(w(l)-1))/((2+w(i-1)+w(j)+w(k)+w(l))*math.sqrt(i*(i+d-1)))
     return y
     
 # Use chi to compute X
@@ -199,8 +197,7 @@ def makeV():
     
 def makeA():
     for i in range(0,L):
-        for j in range(i+1):
-            A.B[i][j] = (w(i)**2 + w(j)**2 -4)*V.getel2Dsym(i,j)/2 -c(i)*c(j)/2
+            A.B[i][i] = (w(i)**2 + w(i)**2 -4)*V.getel2Dsym(i,i)/2 -c(i)*c(i)/2
     return A
 
 # Create output files of entries for X,Y,R,T listed by index value with 14 significant figures    
