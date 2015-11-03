@@ -99,6 +99,14 @@ class symmat(list):
         for i in range(0,self.dim):
             self.B[i] = [None]*(self.dim)
         return self.B
+        
+# Build a completely symmetric LxL list
+    
+    def build2Dsym(self):
+        self.B = [None]*(self.dim)
+        for i in range(0,self.dim):
+            self.B[i] = [None]*(i+1)
+        return self.B
 
 # Return the element of self.T when totally symmetric  
       
@@ -129,11 +137,12 @@ class symmat(list):
         else:
             return self.T[a][b][temp[0]][temp[1]]
             
-    def getel2D(self,a,b):
+    def getel2Dsym(self,a,b):
+        temp = sorted([a,b], reverse=True)        
         if a<0 or b<0:
             return 0
         else:
-            return self.B[a][b]
+            return self.B[temp[0]][temp[1]]
             
 ############################################################################        
 ############################################################################        

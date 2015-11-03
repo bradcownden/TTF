@@ -165,7 +165,8 @@ def makeW_10():
 def makeT():
     T = [None]*L
     for i in range(0,L):
-        T[i] = (w(i)**2)*X.getel3(i,i,i,i)/2 + 3*Y.getel2(i,i,i,i)/2 + 2*(w(i)**4)*W_00.getel2(i,i,i,i) + 2*(w(i)**2)*W_10.getel2(i,i,i,i)
+        T[i] = (w(i)**2)*X.getel3(i,i,i,i)/2 + 3*Y.getel2(i,i,i,i)/2 + 2*(w(i)**4)*W_00.getel2(i,i,i,i) + 2*(w(i)**2)*W_10.getel2(i,i,i,i) \
+        + (w(i)**2)*(A.getel2Dsym(i,i) + (w(i)**2)*V.getel2Dsym(i,i))
     return T
     
 def makeR():
@@ -180,19 +181,27 @@ def makeR():
                 + (Y.getel2(i,i,j,j) + Y.getel2(j,j,i,i))/2 \
                 +(w(i)**2)*(w(j)**2)*(X.getel3(i,j,j,i) - X.getel3(j,i,j,i))/(w(j)**2 - w(i)**2) \
                 + (w(i)**2)*(w(j)**2)*(W_00.getel2(j,j,i,i) + W_00.getel2(i,i,j,j)) \
-                + (w(i)**2)*(W_10.getel2(j,j,i,i)) + (w(j)**2)*(W_10.getel2(i,i,j,j))
+                + (w(i)**2)*(W_10.getel2(j,j,i,i)) + (w(j)**2)*(W_10.getel2(i,i,j,j)) \
+                + (w(j)**2)*(A.getel2Dsym(i,i) + (w(i)**2)*V.getel2Dsym(i,i))
     return R
     
 def makeV():
     for i in range(0,L):
         for j in range(0,L):
-            V.B[i+1][j] = (2*(w(i)+1)/((w(i)+w(j)-4)*math.sqrt((i+1)*(i+d))))*((d-1)*((w(i)**2 - w(j) -4)/(w(i)**2 -1) \
-            + w(j)*(w(j)+1)/(w(j)**2 -1))*V.getel2D(i,j)/2 + (w(i)-w(j)-2)*math.sqrt(i*(i+d-1))*V.getel2D(i-1,j)/(2*(w(i)-1)) \
-            + w(j)*math.sqrt(j*(j+d-1))*V.getel2D(i,j-1)/(w(j)-1))
+            try:
+                V.B[i+1][j] = (2*(w(i)+1)/((w(i)+w(j)-4)*math.sqrt((i+1)*(i+d))))*((d-1)*((w(i)**2 - w(j) -4)/(w(i)**2 -1) \
+                + w(j)*(w(j)+1)/(w(j)**2 -1))*V.getel2Dsym(i,j)/2 + (w(i)-w(j)-2)*math.sqrt(i*(i+d-1))*V.getel2Dsym(i-1,j)/(2*(w(i)-1)) \
+                + w(j)*math.sqrt(j*(j+d-1))*V.getel2Dsym(i,j-1)/(w(j)-1))
+            except IndexError:
+#                print("V[%d][%d] is out of range" % (i+1,j))
+                pass
     return V
     
 def makeA():
-    pass
+    for i in range(0,L):
+        for j in range(i+1):
+            A.B[i][j] = (w(i)**2 + w(j)**2 -4)*V.getel2Dsym(i,j)/2 -c(i)*c(j)/2
+    return A
 
 # Create output files of entries for X,Y,R,T listed by index value with 14 significant figures    
 def outputs(X,Y,R,T,S):
@@ -303,13 +312,14 @@ print("W_10 =", W_10.T, "\n")
 
 # Additional coefficients in the interior time gauge, V and A
 V = rt.symmat(L)
-V.build2D()
+V.build2Dsym()
 V.B[0][0] = v_0(d)
 makeV()
 print("V =",V.B,"\n")
 A = rt.symmat(L)
-A.build2D()
+A.build2Dsym()
 makeA()
+print("A =",A.B,"\n")
 
 """
 Now use the results of W_00 and W_10 to calculate R and T
