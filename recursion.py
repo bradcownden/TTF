@@ -136,7 +136,7 @@ def makeW_00():
                 for l in range(0,k+1):
                     if k == l:
                         try:
-                            W_00.T[i][j][l+1][l+1] = ((w(l)+1)/(w(l+1)-1))*W_00.getel2(i,j,l,l)
+                            W_00.T[i][j][l+1][l+1] = (w(l)+1)**W_00.getel2(i,j,l,l)/(w(l+1)-1)
                         except IndexError:
 #                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,l+1,l+1))
                             pass
@@ -153,11 +153,8 @@ def makeW_10():
         for j in range(0,W_10.dim):
             for k in range(0,W_10.dim):
                 for l in range(0,k+1):
-                    if l == k:
-                        W_10.T[i][j][k][l] = (1/2)*((w(i)**2 + w(j)**2 -4)*W_00.getel2(i,j,k,l) - 2*(d-1)*x.getel(i,j,k,l) - 2*X.getel3(i,j,k,l) \
-                        -2*X.getel3(j,i,k,l) - X.getel3(k,i,j,l) - X.getel3(l,i,j,k))
-                    else:
-                        W_10.T[i][j][k][l] = (Y.getel2(i,k,j,l) - Y.getel2(i,l,j,k))/(w(k)**2 - w(l)**2)
+                    W_10.T[i][j][k][l] = (1/2)*(w(i)**2 + w(j)**2 -4)*W_00.getel2(i,j,k,l) - (d-1)*x.getel(i,j,k,l) \
+                    - (X.getel3(i,j,k,l) + X.getel3(j,i,k,l)) - (1/2)*(X.getel3(k,i,j,l) + X.getel3(l,i,j,k))
     return W_10                    
     
 def makeT():
@@ -333,7 +330,7 @@ print("R =", R.B, "\n")
 """
 Finally, output the results into individual files
 """
-outputs(X,Y,R,T,S)
+#outputs(X,Y,R,T,S)
 
     
     
