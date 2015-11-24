@@ -111,7 +111,7 @@ def makeS(X,Y):
                 for l in range(0,S.dim):
                     if i ==k or j==k:
                         pass
-                        print("S[%d][%d][%d][%d] does not exist due to restricted sum" % (i,j,k,l))
+#                        print("S[%d][%d][%d][%d] does not exist due to restricted sum" % (i,j,k,l))
                     else:
                         S.T[i][j][k][l] = -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(j)*w(k)*X.getel3(l,i,j,k) - w(l)*Y.getel2(i,l,j,k))/4 \
                         -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(j)*w(k)*w(l)*X.getel3(i,j,k,l) - w(i)*Y.getel2(j,i,k,l))/4 \
@@ -121,8 +121,8 @@ def makeS(X,Y):
 
 # W_00 requires different recursion relations for k=l=0. Build these first.                    
 def makeW_00_zeros():
-    for i in range(1,L):
-        for j in range(0,L):
+    for i in range(1,W_00.dim):
+        for j in range(0,W_00.dim):
             W_00.T[i][j][0][0] = (w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1)))*(((d-1)/2)*((w(i-1)**2 - 4)/(w(i-1)**2 -1) \
             + (w(j)**2)/(w(j)**2 - 1) - 2*(w(0)**2 + 1)/(w(0)**2 - 1))*W_00.getel2(i-1,j,0,0) + (w(i-1)-2)*math.sqrt((i-1)*(i+d-2))*W_00.getel2(i-2,j,0,0)/(w(i-1)-1))
             W_00.T[j][i][0][0] = W_00.T[i][j][0][0]
@@ -136,9 +136,17 @@ def makeW_00():
                 for l in range(0,k+1):
                     if k == l:
                         try:
-                            W_00.T[i][j][l+1][l+1] = (w(l)+1)**W_00.getel2(i,j,l,l)/(w(l+1)-1)
+                            print("In loop with i=%d, j=%d, k=%d, l=%d" % (i,j,k,l))
+                            print("x[%d][%d][%d][%d] = %f" % (k+2,i,j,k-1,x.getel(k+2,i,j,k-1)))
+                            print("x[%d][%d][%d][%d] = %f" % (k,i,j,k-1,x.getel(k,i,j,k-1)))
+                            print("W_00[%d][%d][%d][%d] =" % (i,j,k+1,k+1), W_00.T[i][j][k+1][k+1])
+                            W_00.T[i][j][k+1][k+1] = W_00.getel2(i,j,k,k) +(w(k)+1)*((d-1)*(X.getel3(k+1,i,j,k)-X.getel3(k,i,j,k+1))/((w(k)**2 -1)*(w(k+1)**2 -1)) \
+                            - math.sqrt(k*(k+d-1))*(X.getel3(k+1,i,j,k-1) - X.getel3(k-1,i,j,k+1))/((w(k)-1)*(w(k-1)**2 - w(k+1)**2)) 
+                            + math.sqrt((k+2)*(k+d+1))*(-(d-1)*((w(k+2)**2)/(w(k+2)**2 -1) - (w(k)**2)/(w(k)**2 -1))*(1+ w(k+2)/2)*x.getel(k+2,i,j,k) \
+                            - math.sqrt((k+2)*(k+d+1))*w(k+2)*x.getel(k+1,i,j,k)/(w(k+2) -1) + math.sqrt((k+1)*(k+d))*(w(k+2)*x.getel(k+2,i,j,k+1) - w(k)*x.getel(k+1,i,j,k))/(2*(w(k)+1)) \
+                            + math.sqrt(k*(k+d-1))*(w(k+2)*x.getel(k+2,i,j,k-1) + w(k)*x.getel(k,i,j,k-1))/(2*(w(k)-1)))/((w(k+1) + 1)*(w(k)**2 - w(k+2)**2)))/math.sqrt((k+1)*(k+d))
                         except IndexError:
-#                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,l+1,l+1))
+                            print("W[%d][%d][%d][%d] does not exist" % (i,j,k+1,k+1))
                             pass
                     else:
                         try:
@@ -181,8 +189,8 @@ def makeR():
     return R
     
 def makeV():
-    for i in range(0,L):
-        for j in range(0,L):
+    for i in range(0,V.dim):
+        for j in range(0,V.dim):
             try:
                 V.B[i+1][j] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j)-4)/(w(i)**2 -1) + w(j)/(w(j)-1))*V.getel2Dsym(i,j)/2 \
                 + (w(i) - w(j) -4)*math.sqrt(i*(i+d-1))*V.getel2Dsym(i-1,j)/(2*(w(i)-1)) \
@@ -254,36 +262,36 @@ L=2
 d=3
 
 """
-Chi and psi must be calculated to level L+1
+Chi and psi must be calculated to level L+3
 """
-x = rt.symmat(L+1)
+x = rt.symmat(L+3)
 x.build()
 x.T[0][0][0][0] = x_0(d)
 chi(x)
 print("x.T =", x.T,"\n")
-y = rt.symmat(L+1)
+y = rt.symmat(L+3)
 y.build()
 y.T[0][0][0][0] = y_0(d)
 psi(y)
 print("y.T =", y.T, "\n")
 
 """
-Using chi and psi, X and Y are computed to level L
+Using chi and psi, X and Y are computed to level L+1
 """
-X = rt.symmat(L)
+X = rt.symmat(L+2)
 X.build3()
 makeX(x)
 print("X =", X.T,"\n")
-Y = rt.symmat(L)
+Y = rt.symmat(L+2)
 Y.build2()
 makeY(y)
 print("Y =", Y.T,"\n")
 
 """
-S is computed to level L using X and Y. Note that values prohibited by the restricted
+S is computed to level L+1 using X and Y. Note that values prohibited by the restricted
 sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S 
 """
-S = rt.symmat(L)
+S = rt.symmat(L+1)
 S.buildnone()
 makeS(X,Y)
 print("S =", S.T,"\n")
@@ -296,6 +304,7 @@ W_00 = rt.symmat(L)
 W_00.build2()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
 makeW_00_zeros()
+print("W_00 =", W_00.T, "\n") 
 makeW_00()
 print("W_00 =", W_00.T, "\n") 
 # W_10 is computed to level L
