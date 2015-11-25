@@ -141,10 +141,10 @@ def makeW_00():
                             print("x[%d][%d][%d][%d] = %f" % (k,i,j,k-1,x.getel(k,i,j,k-1)))
                             print("W_00[%d][%d][%d][%d] =" % (i,j,k+1,k+1), W_00.T[i][j][k+1][k+1])
                             W_00.T[i][j][k+1][k+1] = W_00.getel2(i,j,k,k) +(w(k)+1)*((d-1)*(X.getel3(k+1,i,j,k)-X.getel3(k,i,j,k+1))/((w(k)**2 -1)*(w(k+1)**2 -1)) \
-                            - math.sqrt(k*(k+d-1))*(X.getel3(k+1,i,j,k-1) - X.getel3(k-1,i,j,k+1))/((w(k)-1)*(w(k-1)**2 - w(k+1)**2)) 
-                            + math.sqrt((k+2)*(k+d+1))*(-(d-1)*((w(k+2)**2)/(w(k+2)**2 -1) - (w(k)**2)/(w(k)**2 -1))*(1+ w(k+2)/2)*x.getel(k+2,i,j,k) \
-                            - math.sqrt((k+2)*(k+d+1))*w(k+2)*x.getel(k+1,i,j,k)/(w(k+2) -1) + math.sqrt((k+1)*(k+d))*(w(k+2)*x.getel(k+2,i,j,k+1) - w(k)*x.getel(k+1,i,j,k))/(2*(w(k)+1)) \
-                            + math.sqrt(k*(k+d-1))*(w(k+2)*x.getel(k+2,i,j,k-1) + w(k)*x.getel(k,i,j,k-1))/(2*(w(k)-1)))/((w(k+1) + 1)*(w(k)**2 - w(k+2)**2)))/math.sqrt((k+1)*(k+d))
+                            - math.sqrt(k*(k+d-1))*(X.getel3(k+1,i,j,k-1) - X.getel3(k-1,i,j,k+1))/((w(k)-1)*(w(k-1)**2 - w(k+1)**2)) \
+                            + math.sqrt((k+2)*(k+d+1))*(-(d-1)*(w(k)+5)*((w(k+2)**2)/(w(k+2)**2 -1) - w(k)**2/(w(k)**2 -1))*x.getel(k+2,i,j,k) \
+                            + 2*math.sqrt((k+1)*(k+d))*x.getel(k+2,i,j,k+1)/(w(k)+1) + w(k)*math.sqrt(k*(k+d-1))*x.getel(k+2,i,j,k-1)/(2*(w(k)-1)) \
+                            + (w(k)+4)*(math.sqrt(k*(k+d-1))/(2*(w(k)-1)) - math.sqrt((k+2)*(k+d+1))/(w(k)+3)))/((w(k+1) + 1)*(w(k)**2 - w(k+2)**2)))/math.sqrt((k+1)*(k+d))
                         except IndexError:
                             print("W[%d][%d][%d][%d] does not exist" % (i,j,k+1,k+1))
                             pass
@@ -276,7 +276,7 @@ psi(y)
 print("y.T =", y.T, "\n")
 
 """
-Using chi and psi, X and Y are computed to level L+1
+Using chi and psi, X and Y are computed to level L+2
 """
 X = rt.symmat(L+2)
 X.build3()
@@ -288,16 +288,16 @@ makeY(y)
 print("Y =", Y.T,"\n")
 
 """
-S is computed to level L+1 using X and Y. Note that values prohibited by the restricted
+S is computed to level L+2 using X and Y. Note that values prohibited by the restricted
 sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S 
 """
-S = rt.symmat(L+1)
+S = rt.symmat(L+2)
 S.buildnone()
 makeS(X,Y)
 print("S =", S.T,"\n")
 
 """
-Both R and T require calculating W_00 and W_10 first
+Both R and T require calculating W_00 and W_10 first; W_00 can only be calculated to level L
 """
 # W_00 is computed to level L
 W_00 = rt.symmat(L)
@@ -306,7 +306,8 @@ W_00.T[0][0][0][0] = W_00naught(d)[0]
 makeW_00_zeros()
 print("W_00 =", W_00.T, "\n") 
 makeW_00()
-print("W_00 =", W_00.T, "\n") 
+print("W_00 =", W_00.T, "\n")
+print(W_00.T[1][1][1][1]) 
 # W_10 is computed to level L
 W_10 = rt.symmat(L)
 W_10.build2()
@@ -325,7 +326,7 @@ makeA()
 print("A =",A.B,"\n")
 
 """
-Now use the results of W_00 and W_10 to calculate R and T
+Now use the results of W_00 and W_10 to calculate R and T up to level L
 """
 # T is computed to level L
 T = makeT()
