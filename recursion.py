@@ -121,11 +121,18 @@ def makeS(X,Y):
 
 # W_00 requires different recursion relations for k=l=0. Build these first.                    
 def makeW_00_zeros():
-    for i in range(1,W_00.dim):
+    for i in range(0,W_00.dim):
         for j in range(0,W_00.dim):
-            W_00.T[i][j][0][0] = (w(i-1)+1)/((w(i-1)+2)*math.sqrt((i)*(i+d-1)))*(((d-1)/2)*((w(i-1)**2 - 4)/(w(i-1)**2 -1) \
-            + (w(j)**2)/(w(j)**2 - 1) - 2*(w(0)**2 + 1)/(w(0)**2 - 1))*W_00.getel2(i-1,j,0,0) + (w(i-1)-2)*math.sqrt((i-1)*(i+d-2))*W_00.getel2(i-2,j,0,0)/(w(i-1)-1))
-            W_00.T[j][i][0][0] = W_00.T[i][j][0][0]
+            try:
+                W_00.T[i+1][j][0][0] = 2*(w(i)+1)*((d-1)*((w(i)**2 -4 - w(j))/(w(i)**2 -1) + w(j)/(w(j)-1))*W_00.getel2(i,j,0,0)/2 \
+                + math.sqrt(i*(i+d-1))*((w(i)-4-w(j))/(w(i)-1) + w(j)/(w(j)-1))*W_00.getel2(i-1,j,0,0)/2 \
+                + math.sqrt(j*(j+d-1))*w(j)*W_00.getel2(i,j-1,0,0)/(2*(w(j)-1)) \
+                - math.sqrt(d)*(X.getel3(0,i,j,1)-X.getel3(1,i,j,0))/(2*(w(j)-1)))/(math.sqrt((i+1)*(i+d))*(w(i)+4))
+            
+                W_00.T[j][i+1][0][0] = W_00.T[i+1][j][0][0]
+            except IndexError:
+                print("Index error for W_00.T[%d][%d][0][0]" % (i+1,j), "\n")
+                pass
     return W_00
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
 # relation when k = l, which uses the result of makeW_00_zeros().         
@@ -136,12 +143,10 @@ def makeW_00():
                 for l in range(0,k+1):
                     if k == l:
                         try:
-                            W_00.T[i][j][k+1][k+1] = W_00.getel2(i,j,k,k) + (w(k)+1)*(d-1)*(1/(w(k)**2 -1) - 1/(w(k+1)**2 -1))*(X.getel3(k+1,i,j,k) - X.getel3(k,i,j,k+1))/(math.sqrt((k+1)*(k+d))*(w(k)**2 - w(k+1)**2)) \
-                            + (w(k)+1)*math.sqrt((k+2)*(k+d+1))*(X.getel3(k+2,i,j,k) - X.getel3(k,i,j,k+2))/(math.sqrt((k+1)*(k+d))*(w(k+1)+1)*(w(k)**2 - w(k+2)**2)) \
-                            - (w(k)+1)*math.sqrt(k*(k+d-1))*(X.getel3(k+1,i,j,k-1) - X.getel3(k-1,i,j,k+1))/((w(k)-1)*math.sqrt((k+1)*(k+d))*(w(k-1)**2 - w(k+1)**2))
-                            #-(d-1)*(w(k)+5)*((w(k+2)**2)/(w(k+2)**2 -1) - (w(k)**2)/(w(k)**2 -1))*x.getel(k+2,i,j,k)/2 \
-                            #+ 2*math.sqrt((k+1)*(k+d))*x.getel(k+2,i,j,k+1)/(w(k)+1) + w(k)*math.sqrt(k*(k+d-1))*x.getel(k+2,i,j,k-1)/(2*(w(k)-1)) \
-                            #+ (w(k)+4)*(math.sqrt(k*(k+d-1))/(2*(w(k)-1)) - math.sqrt((k+2)*(k+d+1))/(w(k)+3))*x.getel(k+1,i,j,k)
+                            W_00.T[i][j][k+1][k+1] = W_00.getel2(i,j,k,k) \
+                            + ((w(k)+1)*(d-1)/math.sqrt((k+1)*(k+d)))*(1/(w(k+1)**2 -1) - 1/(w(k)**2 -1))*(X.getel3(k+1,i,j,k) - X.getel3(k,i,j,k+1))/(w(k)**2 - w(k+1)**2) \
+                            + ((w(k)+1)*(math.sqrt((k+2)*(k+d+1)))/((w(k+1)+1)*math.sqrt((k+1)*(k+d))))*(X.getel3(k+2,i,j,k)-X.getel3(k,i,j,k+2))/(w(k)**2 - w(k+2)**2) \
+                            - ((w(k)+1)*math.sqrt(k*(k+d-1))/((w(k)-1)*math.sqrt((k+1)*(k+d))))*(X.getel3(k+1,i,j,k-1) - X.getel3(k-1,i,j,k+1))/(w(k-1)**2 - w(k+1)**2)
                         except IndexError:
                             #print("W.T[%d][%d][%d][%d] does not exist" % (i,j,k+1,k+1))
                             pass
@@ -149,7 +154,7 @@ def makeW_00():
                         try:
                             W_00.T[i][j][k][l] = (X.getel3(l,i,j,k) - X.getel3(k,i,j,l))/(w(k)**2 - w(l)**2)
                         except IndexError:
-                            print("Index error for W.T[%d][%d][%d][%d]" % (i,j,k,l))
+                            print("Index error for W_00.T[%d][%d][%d][%d]" % (i,j,k,l))
                             pass
     return W_00
 
@@ -306,7 +311,7 @@ W_00 = rt.symmat(L)
 W_00.build2()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
 makeW_00_zeros()
-print("W_00 =", W_00.T, "\n") 
+print("W_00_zeros =", W_00.T, "\n") 
 makeW_00()
 print("W_00 =", W_00.T, "\n")
 print("W_00[%d][%d][%d][%d] = %f" % (0,0,1,0,W_00.getel2(0,0,1,0)), "\n")
