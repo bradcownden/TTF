@@ -134,6 +134,7 @@ def makeW_00_zeros():
                 #print("Index error for W_00.T[%d][%d][0][0]" % (i+1,j), "\n")
                 pass
     return W_00
+    
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
 # relation when k = l, which uses the result of makeW_00_zeros().         
 def makeW_00():
@@ -270,12 +271,12 @@ x = rt.symmat(L+3)
 x.build()
 x.T[0][0][0][0] = x_0(d)
 chi(x)
-print("x.T =", x.T,"\n")
+#print("x.T =", x.T,"\n")
 y = rt.symmat(L+3)
 y.build()
 y.T[0][0][0][0] = y_0(d)
 psi(y)
-print("y.T =", y.T, "\n")
+#print("y.T =", y.T, "\n")
 
 """
 Using chi and psi, X and Y are computed to level L+2
@@ -283,12 +284,12 @@ Using chi and psi, X and Y are computed to level L+2
 X = rt.symmat(L+2)
 X.build3()
 makeX(x)
-print("X =", X.T, "\n")
+#print("X =", X.T, "\n")
 
 Y = rt.symmat(L+2)
 Y.build2()
 makeY(y)
-print("Y =", Y.T,"\n")
+#print("Y =", Y.T,"\n")
 
 """
 S is computed to level L+2 using X and Y. Note that values prohibited by the restricted
@@ -307,20 +308,18 @@ W_00 = rt.symmat(L)
 W_00.build2()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
 makeW_00_zeros()
-print("W_00_zeros =", W_00.T, "\n") 
+#print("W_00_zeros =", W_00.T, "\n") 
 makeW_00()
-print("W_00 =", W_00.T, "\n")
-print("W_00[%d][%d][%d][%d] = %f" % (0,0,1,0,W_00.getel2(0,0,1,0)), "\n")
-print("W_00[%d][%d][%d][%d] = %f" % (0,0,1,1,W_00.getel2(0,0,1,1)), "\n")
-print("W_00[%d][%d][%d][%d] = %f" % (0,1,1,1,W_00.getel2(0,1,1,1)), "\n")
-print("W_00[%d][%d][%d][%d] = %f" % (1,0,0,0,W_00.getel2(1,0,0,0)), "\n") 
+#print("W_00 =", W_00.T, "\n")
+
 # W_10 is computed to level L
 W_10 = rt.symmat(L)
 W_10.build2()
 makeW_10()
-print("W_10 =", W_10.T, "\n")
 
-# Additional coefficients in the interior time gauge, V and A
+"""
+Additional coefficients in the interior time gauge, V and A are calculated up to level L
+"""
 V = rt.symmat(L)
 V.build2Dsym()
 V.B[0][0] = v_0(d)
