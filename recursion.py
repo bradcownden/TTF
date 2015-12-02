@@ -298,7 +298,15 @@ sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S
 S = rt.symmat(L+2)
 S.buildnone()
 makeS(X,Y)
-print("S =", S.T,"\n")
+#for i in range(0,S.dim):
+ #       for j in range(0,S.dim):
+  #          for k in range(0,S.dim):
+   #             for l in range(0,S.dim):
+    #                if i ==k or j==k:
+     #                   pass
+      #              else:
+       #                 print("S[%d][%d][%d][%d] = %f" % (i,j,k,l,S.T[i][j][k][l]), "\n")
+#print("S =", S.T,"\n")
 
 """
 Both R and T require calculating W_00 and W_10 first; W_00 can only be calculated to level L
@@ -345,7 +353,7 @@ print("R =", R.B, "\n")
 """
 Finally, output the results into individual files
 """
-#outputs(X,Y,R,T,S)
+outputs(X,Y,R,T,S)
 
     
     
