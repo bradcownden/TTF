@@ -124,14 +124,14 @@ def makeW_00_zeros():
     for i in range(0,W_00.dim):
         for j in range(0,W_00.dim):
             try:
-                W_00.T[i+1][j][0][0] = 2*(w(i)+1)*((d-1)*((w(i)**2 -4 - w(j))/(w(i)**2 -1) + w(j)/(w(j)-1))*W_00.getel2(i,j,0,0)/2 \
-                + math.sqrt(i*(i+d-1))*((w(i)-4-w(j))/(w(i)-1) + w(j)/(w(j)-1))*W_00.getel2(i-1,j,0,0)/2 \
-                + math.sqrt(j*(j+d-1))*w(j)*W_00.getel2(i,j-1,0,0)/(2*(w(j)-1)) \
-                - math.sqrt(d)*(X.getel3(0,i,j,1)-X.getel3(1,i,j,0))/(2*(w(j)-1)))/(math.sqrt((i+1)*(i+d))*(w(i)+4))
-            
+                W_00.T[i+1][j][0][0] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j) - 4)/(w(i)**2 -1) + w(j)/(w(j)-1))*W_00.getel2(i,j,0,0)/2 \
+                + math.sqrt(i*(i+d-1))*(w(i)-w(j)-4)*W_00.getel2(i-1,j,0,0)/(2*(w(i)-1)) \
+                + math.sqrt(j*(j+d-1))*w(j)*W_00.getel2(i,j-1,0,0)/(w(j)-1) \
+                - math.sqrt(d)*(X.getel3(0,i,j,1) - X.getel3(1,i,j,0))/(w(1)**2 - w(0)**2))/((w(i)+w(j)+4)*math.sqrt((i+1)*(i+d)))
+                
                 W_00.T[j][i+1][0][0] = W_00.T[i+1][j][0][0]
             except IndexError:
-                print("Index error for W_00.T[%d][%d][0][0]" % (i+1,j), "\n")
+                #print("Index error for W_00.T[%d][%d][0][0]" % (i+1,j), "\n")
                 pass
     return W_00
 # Then use regular recursion relation for W_00[i][j][k][l] when k != l, different recursion
@@ -283,11 +283,7 @@ Using chi and psi, X and Y are computed to level L+2
 X = rt.symmat(L+2)
 X.build3()
 makeX(x)
-print("X =", X.T,"\n")
-print(X.getel3(1,0,0,0))
-print(X.getel3(0,0,0,1))
-print(X.getel3(2,0,0,0))
-print(X.getel3(0,0,0,2),"\n")
+print("X =", X.T, "\n")
 
 Y = rt.symmat(L+2)
 Y.build2()
@@ -316,7 +312,8 @@ makeW_00()
 print("W_00 =", W_00.T, "\n")
 print("W_00[%d][%d][%d][%d] = %f" % (0,0,1,0,W_00.getel2(0,0,1,0)), "\n")
 print("W_00[%d][%d][%d][%d] = %f" % (0,0,1,1,W_00.getel2(0,0,1,1)), "\n")
-print("W_00[%d][%d][%d][%d] = %f" % (0,1,1,1,W_00.getel2(0,1,1,1)), "\n") 
+print("W_00[%d][%d][%d][%d] = %f" % (0,1,1,1,W_00.getel2(0,1,1,1)), "\n")
+print("W_00[%d][%d][%d][%d] = %f" % (1,0,0,0,W_00.getel2(1,0,0,0)), "\n") 
 # W_10 is computed to level L
 W_10 = rt.symmat(L)
 W_10.build2()
