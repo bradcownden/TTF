@@ -180,7 +180,7 @@ def makeR():
         for j in range(0,R.dim):
             if i == j:
                 pass
-                print("R[%d][%d] does not exist due to restricted sum" % (i,j))
+                #print("R[%d][%d] does not exist due to restricted sum" % (i,j))
             else:
                 R.B[i][j] = ((w(i)**2 + w(j)**2)/(w(j)**2 - w(i)**2))*((w(j)**2)*X.getel3(i,j,j,i) - (w(i)**2)*X.getel3(j,i,i,j))/2 \
                 + 2*((w(j)**2)*Y.getel2(i,j,i,j) - (w(i)**2)*Y.getel2(j,i,j,i))/(w(j)**2 - w(i)**2) \
@@ -332,23 +332,23 @@ V = rt.symmat(L)
 V.build2Dsym()
 V.B[0][0] = v_0(d)
 makeV()
-print("V =",V.B,"\n")
+#print("V =",V.B,"\n")
 A = rt.symmat(L)
 A.build2Dsym()
 makeA()
-print("A =",A.B,"\n")
+#print("A =",A.B,"\n")
 
 """
 Now use the results of W_00 and W_10 to calculate R and T up to level L
 """
 # T is computed to level L
 T = makeT()
-print("T =", T, "\n")
+#print("T =", T, "\n")
 # R is computed to level L
 R = rt.symmat(L)
 R.build2D()
 makeR()
-print("R =", R.B, "\n") 
+#print("R =", R.B, "\n") 
 
 """
 Finally, output the results into individual files
