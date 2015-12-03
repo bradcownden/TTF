@@ -143,6 +143,17 @@ class symmat(list):
             return 0
         else:
             return self.B[temp[0]][temp[1]]
+
+# Return the element of a W matrix, which is symmetric
+# in the first two indices and the last two, without mixing
+
+    def getelW(self,a,b,c,d):
+        t1 = sorted([a,b], reverse=True)
+        t2 = sorted([c,d], reverse=True)
+        if a<0 or b<0 or c<0 or d<0:
+            return 0
+        else:
+            return self.T[t1[0]][t1[1]][t2[0]][t2[1]]
             
 ############################################################################        
 ############################################################################        

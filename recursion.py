@@ -124,14 +124,20 @@ def makeW_00_zeros():
     for i in range(0,W_00.dim):
         for j in range(0,W_00.dim):
             try:
-                W_00.T[i+1][j][0][0] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j) - 4)/(w(i)**2 -1) + w(j)/(w(j)-1))*W_00.getel2(i,j,0,0)/2 \
-                + math.sqrt(i*(i+d-1))*(w(i)-w(j)-4)*W_00.getel2(i-1,j,0,0)/(2*(w(i)-1)) \
-                + math.sqrt(j*(j+d-1))*w(j)*W_00.getel2(i,j-1,0,0)/(w(j)-1) \
+                print("W_00.T =", W_00.T, "\n")                
+                print("W_00.T[%d][%d][%d][%d] =" % (i,j,0,0), W_00.getelW(i,j,0,0), "\n")
+                print("W_00.T[%d][%d][%d][%d] =" % (j,i,0,0), W_00.getelW(j,i,0,0), "\n")
+                print("W_00.T[%d][%d][%d][%d] = %f" % (i-1,j,0,0,W_00.getelW(i-1,j,0,0)), "\n")
+                print("W_00.T[%d][%d][%d][%d] = %f" % (i,j-1,0,0,W_00.getelW(i,j-1,0,0)), "\n")
+                print("Calculating W_00.T[%d][%d][%d][%d]" % (i+1,j,0,0), "\n")
+                W_00.T[i+1][j][0][0] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j) - 4)/(w(i)**2 -1) + w(j)/(w(j)-1))*W_00.getelW(i,j,0,0)/2 \
+                + math.sqrt(i*(i+d-1))*(w(i)-w(j)-4)*W_00.getelW(i-1,j,0,0)/(2*(w(i)-1)) \
+                + math.sqrt(j*(j+d-1))*w(j)*W_00.getelW(i,j-1,0,0)/(w(j)-1) \
                 - math.sqrt(d)*(X.getel3(0,i,j,1) - X.getel3(1,i,j,0))/(w(1)**2 - w(0)**2))/((w(i)+w(j)+4)*math.sqrt((i+1)*(i+d)))
                 
-                W_00.T[j][i+1][0][0] = W_00.T[i+1][j][0][0]
+                W_00.T[j+1][i][0][0] = W_00.T[i+1][j][0][0]
             except IndexError:
-                #print("Index error for W_00.T[%d][%d][0][0]" % (i+1,j), "\n")
+                print("Index error for W_00.T[%d][%d][0][0]" % (i+1,j), "\n")
                 pass
     return W_00
     
@@ -144,10 +150,14 @@ def makeW_00():
                 for l in range(0,k+1):
                     if k == l:
                         try:
-                            W_00.T[i][j][k+1][k+1] = W_00.getel2(i,j,k,k) \
+                            print("W_00.T[%d][%d][%d][%d] =" % (i,j,k,k), W_00.getelW(i,j,k,k), "\n")
+                            print("Calculating W_00.T[%d][%d][%d][%d]" % (i,j,k+1,k+1), "\n")
+                            W_00.T[i][j][k+1][k+1] = W_00.getelW(i,j,k,k) \
                             + ((w(k)+1)*(d-1)/math.sqrt((k+1)*(k+d)))*(1/(w(k+1)**2 -1) - 1/(w(k)**2 -1))*(X.getel3(k+1,i,j,k) - X.getel3(k,i,j,k+1))/(w(k)**2 - w(k+1)**2) \
                             + ((w(k)+1)*(math.sqrt((k+2)*(k+d+1)))/((w(k+1)+1)*math.sqrt((k+1)*(k+d))))*(X.getel3(k+2,i,j,k)-X.getel3(k,i,j,k+2))/(w(k)**2 - w(k+2)**2) \
                             - ((w(k)+1)*math.sqrt(k*(k+d-1))/((w(k)-1)*math.sqrt((k+1)*(k+d))))*(X.getel3(k+1,i,j,k-1) - X.getel3(k-1,i,j,k+1))/(w(k-1)**2 - w(k+1)**2)
+                            
+                            W_00.T[j][i][k+1][k+1] = W_00.T[i][j][k+1][k+1]
                         except IndexError:
                             #print("W.T[%d][%d][%d][%d] does not exist" % (i,j,k+1,k+1))
                             pass
@@ -164,14 +174,14 @@ def makeW_10():
         for j in range(0,W_10.dim):
             for k in range(0,W_10.dim):
                 for l in range(0,k+1):
-                    W_10.T[i][j][k][l] = (1/2)*(w(i)**2 + w(j)**2 -4)*W_00.getel2(i,j,k,l) - (d-1)*x.getel(i,j,k,l) \
+                    W_10.T[i][j][k][l] = (1/2)*(w(i)**2 + w(j)**2 -4)*W_00.getelW(i,j,k,l) - (d-1)*x.getel(i,j,k,l) \
                     - (X.getel3(i,j,k,l) + X.getel3(j,i,k,l)) - (1/2)*(X.getel3(k,i,j,l) + X.getel3(l,i,j,k))
     return W_10                    
     
 def makeT():
     T = [None]*L
     for i in range(0,L):
-        T[i] = (w(i)**2)*X.getel3(i,i,i,i)/2 + 3*Y.getel2(i,i,i,i)/2 + 2*(w(i)**4)*W_00.getel2(i,i,i,i) + 2*(w(i)**2)*W_10.getel2(i,i,i,i) \
+        T[i] = (w(i)**2)*X.getel3(i,i,i,i)/2 + 3*Y.getel2(i,i,i,i)/2 + 2*(w(i)**4)*W_00.getelW(i,i,i,i) + 2*(w(i)**2)*W_10.getelW(i,i,i,i) \
         - (w(i)**2)*(A.getel2Dsym(i,i) + (w(i)**2)*V.getel2Dsym(i,i))
     return T
     
@@ -186,8 +196,8 @@ def makeR():
                 + 2*((w(j)**2)*Y.getel2(i,j,i,j) - (w(i)**2)*Y.getel2(j,i,j,i))/(w(j)**2 - w(i)**2) \
                 + (Y.getel2(i,i,j,j) + Y.getel2(j,j,i,i))/2 \
                 +(w(i)**2)*(w(j)**2)*(X.getel3(i,j,j,i) - X.getel3(j,i,j,i))/(w(j)**2 - w(i)**2) \
-                + (w(i)**2)*(w(j)**2)*(W_00.getel2(j,j,i,i) + W_00.getel2(i,i,j,j)) \
-                + (w(i)**2)*(W_10.getel2(j,j,i,i)) + (w(j)**2)*(W_10.getel2(i,i,j,j)) \
+                + (w(i)**2)*(w(j)**2)*(W_00.getelW(j,j,i,i) + W_00.getelW(i,i,j,j)) \
+                + (w(i)**2)*(W_10.getelW(j,j,i,i)) + (w(j)**2)*(W_10.getelW(i,i,j,j)) \
                 - (w(j)**2)*(A.getel2Dsym(i,i) + (w(i)**2)*V.getel2Dsym(i,i))
     return R
     
@@ -195,9 +205,16 @@ def makeV():
     for i in range(0,V.dim):
         for j in range(0,V.dim):
             try:
+                print("V.B =", V.B, "\n")
+                print("Cacluating V.B[%d][%d]" % (i+1,j), "\n")
+                print("V.B[%d][%d] =" % (i,j), V.getel2Dsym(i,j), "\n")
+                print("V.B[%d][%d] =" % (i-1,j), V.getel2Dsym(i-1,j), "\n")
+                print("V.B[%d][%d] =" % (i,j-1), V.getel2Dsym(i,j-1), "\n")
                 V.B[i+1][j] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j)-4)/(w(i)**2 -1) + w(j)/(w(j)-1))*V.getel2Dsym(i,j)/2 \
                 + (w(i) - w(j) -4)*math.sqrt(i*(i+d-1))*V.getel2Dsym(i-1,j)/(2*(w(i)-1)) \
                 + w(j)*math.sqrt(j*(j+d-1))*V.getel2Dsym(i,j-1)/(w(j)-1))/(math.sqrt((i+1)*(i+d))*(w(i)+w(j)+4))
+                
+                V.B[j+1][i] = V.B[i+1][j]
             except IndexError:
 #                print("V[%d][%d] is out of range" % (i+1,j))
                 pass
@@ -261,7 +278,7 @@ def outputs(X,Y,R,T,S):
 """
 Maximum "level" to be calculated, L (non-inclusive), and number of dimensions, d
 """
-L=2
+L=30
 d=3
 
 """
