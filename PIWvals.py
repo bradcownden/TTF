@@ -17,9 +17,9 @@ import numpy as np
 ####################################################################
 ####################################################################
 
-L = 2
-W_00vals = np.zeros((L+1,5))
-W_10vals = np.zeros((L+1,5))
+L = 5
+W_00vals = np.zeros((L**2,5))
+W_10vals = np.zeros((L**2,5))
 
 ####################################################################
 ####################################################################
@@ -55,21 +55,26 @@ def W_10(m,n):
 ####################################################################
     
 def makeW_00(L):
+    row=0
     for i in range(L):
         for j in range(L):
-            print("i = %d, j = %d" % (i,j))
-            W_00vals[i][0] = W_00vals[i][1] = i
-            W_00vals[i][2] = W_00vals[i][3] = j
-            W_00vals[i][4] = W_00(i,j)
+            W_00vals[row][0] = W_00vals[row][1] = i
+            W_00vals[row][2] = W_00vals[row][3] = j
+            W_00vals[row][4] = W_00(i,j)
+            
+            row=row+1
     return W_00vals
             
             
 def makeW_10(L):
+    row=0
     for i in range(L):
         for j in range(L):
-            W_10vals[i][0] = W_10vals[i][1] = i
-            W_10vals[i][2] = W_10vals[i][3] = j
-            W_10vals[i][4] = W_10(i,j)
+            W_10vals[row][0] = W_10vals[row][1] = i
+            W_10vals[row][2] = W_10vals[row][3] = j
+            W_10vals[row][4] = W_10(i,j)
+            
+            row=row+1
     return W_10vals
 
 
@@ -78,9 +83,9 @@ def makeW_10(L):
 
 def main():
     makeW_00(L)
-    print(W_00vals)
-    print("W_00(%d,%d,%d,%d) =" % (0,0,0,0), W_00(0,0), "\n")
-#    makeW_10(L)
+    print("W_00 =", W_00vals, "\n")
+    makeW_10(L)
+    print("W_10 =", W_10vals, "\n")
     print("W_10(%d,%d,%d,%d) =" % (0,0,0,0), W_10(0,0), "\n")
     
 
