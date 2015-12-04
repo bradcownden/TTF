@@ -31,7 +31,7 @@ def dd(x):
         return 0
 
 def W_00(m,l):
-    val = dd(m-l)*(-(2*(m**2)*(2*l+3) + 4*m*(l**2 -2) + 2*l*(3*l+5) + 3))/(16*math.pi*(m+1)*(m+2)*(l+1)*(l+2)*(2*l+3)) \
+    val = dd(m-l)*(-2*(m**2)*(2*l+3) + 4*m*(l**2 -2) + 2*l*(3*l+5) + 3)/(16*math.pi*(m+1)*(m+2)*(l+1)*(l+2)*(2*l+3)) \
     - np.sign(m-l)*(((2*m +3)**2)*(2*l*(l+3) +5))/(16*math.pi*(m+1)*(m+2)*(l+1)*(l+2)*(2*l+3)) \
     + ((2*m +3)**2)*(-psi(m+1)+psi(m+3/2)+2*math.log(2))/(4*math.pi*(m+1)*(m+2)) \
     -(8*(m**4)*(l+1)*(2*l*(l+4)+7)+ 8*(m**3)*(l+1)*(l*(14*l+55)+48) + (m**2)*(4*l*(l*(73*l+355)+527)+979) \
@@ -76,6 +76,21 @@ def makeW_10(L):
             
             row=row+1
     return W_10vals
+    
+def outputs():
+    print("Writing outputs for W_00 and W_10 up to L = %d: \n" % L)
+    
+    with open("PIW_00.dat","w") as f1:
+        for row in range(W_00vals.shape[0]):
+            f1.write("%d %d %d %d %.14e \n" % (W_00vals[row][0],W_00vals[row][1], \
+            W_00vals[row][2],W_00vals[row][3],W_00vals[row][4]))
+        print("Wrote W_00 to %s" % f1.name)
+        
+    with open("PIW_10.dat","w") as f2:
+        for row in range(W_10vals.shape[0]):
+            f2.write("%d %d %d %d %.14e \n" % (W_10vals[row][0],W_10vals[row][1], \
+            W_10vals[row][2],W_10vals[row][3],W_10vals[row][4]))
+        print("Wrote W_10 to %s" % f2.name)
 
 
 ####################################################################
@@ -86,10 +101,12 @@ def main():
     print("W_00 =", W_00vals, "\n")
     makeW_10(L)
     print("W_10 =", W_10vals, "\n")
-    print("W_10(%d,%d,%d,%d) =" % (0,0,0,0), W_10(0,0), "\n")
+    
+
     
 
 main()
+outputs()
 
 ####################################################################
 ####################################################################
