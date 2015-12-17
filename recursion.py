@@ -202,21 +202,20 @@ def makeR():
     return R
     
 def makeV():
-    for i in range(0,V.dim):
-        for j in range(0,V.dim):
+    for i in range(1,V.dim):
+        for j in range(0,i+1):
             try:
                 print("V.B =", V.B, "\n")
-                print("Cacluating V.B[%d][%d]" % (i+1,j), "\n")
-                print("V.B[%d][%d] =" % (i,j), V.getel2Dsym(i,j), "\n")
+                print("Cacluating V.B[%d][%d]" % (i,j), "\n")
                 print("V.B[%d][%d] =" % (i-1,j), V.getel2Dsym(i-1,j), "\n")
-                print("V.B[%d][%d] =" % (i,j-1), V.getel2Dsym(i,j-1), "\n")
-                V.B[i+1][j] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j)-4)/(w(i)**2 -1) + w(j)/(w(j)-1))*V.getel2Dsym(i,j)/2 \
-                + (w(i) - w(j) -4)*math.sqrt(i*(i+d-1))*V.getel2Dsym(i-1,j)/(2*(w(i)-1)) \
-                + w(j)*math.sqrt(j*(j+d-1))*V.getel2Dsym(i,j-1)/(w(j)-1))/(math.sqrt((i+1)*(i+d))*(w(i)+w(j)+4))
+                print("V.B[%d][%d] =" % (i-2,j), V.getel2Dsym(i-2,j), "\n")
+                print("V.B[%d][%d] =" % (i-1,j-1), V.getel2Dsym(i-1,j-1), "\n")
+                V.B[i][j] = 2.*(w(i-1)+1)*((d-1)*((w(i-1)**2 - w(j)-4)/(w(i-1)**2 -1) + w(j)/(w(j)-1))*V.getel2Dsym(i-1,j)/2. \
+                + (w(i-1) - w(j) -4)*math.sqrt((i-1)*(i+d-2.))*V.getel2Dsym(i-2,j)/(2.*(w(i-1)-1)) \
+                + w(j)*math.sqrt(j*(j+d-1.))*V.getel2Dsym(i-1,j-1)/(w(j)-1.))/(math.sqrt(i*(i+d-1.))*(w(i-1)+w(j)+4.))
                 
-                V.B[j+1][i] = V.B[i+1][j]
             except IndexError:
-#                print("V[%d][%d] is out of range" % (i+1,j))
+                print("V[%d][%d] is out of range" % (i+1,j))
                 pass
     return V
     
@@ -278,7 +277,7 @@ def outputs(X,Y,R,T,S):
 """
 Maximum "level" to be calculated, L (non-inclusive), and number of dimensions, d
 """
-L=30
+L=3
 d=3
 
 """
@@ -341,6 +340,12 @@ makeW_00()
 W_10 = rt.symmat(L)
 W_10.build2()
 makeW_10()
+print("W_10[%d][%d][%d][%d] =" % (0,0,0,0), W_10.getelW(0,0,0,0), "\n")
+print("W_10[%d][%d][%d][%d] =" % (1,1,0,0), W_10.getelW(1,1,0,0), "\n")
+print("W_10[%d][%d][%d][%d] =" % (1,1,1,1), W_10.getelW(1,1,1,1), "\n")
+print("W_10[%d][%d][%d][%d] =" % (2,2,0,0), W_10.getelW(2,2,0,0), "\n")
+print("W_10[%d][%d][%d][%d] =" % (2,2,1,1), W_10.getelW(2,2,1,1), "\n")
+print("W_10[%d][%d][%d][%d] =" % (2,2,2,2), W_10.getelW(2,2,2,2), "\n")
 
 """
 Additional coefficients in the interior time gauge, V and A are calculated up to level L
@@ -349,7 +354,7 @@ V = rt.symmat(L)
 V.build2Dsym()
 V.B[0][0] = v_0(d)
 makeV()
-#print("V =",V.B,"\n")
+print("V =",V.B,"\n")
 A = rt.symmat(L)
 A.build2Dsym()
 makeA()
@@ -370,7 +375,7 @@ makeR()
 """
 Finally, output the results into individual files
 """
-outputs(X,Y,R,T,S)
+#outputs(X,Y,R,T,S)
 
     
     
