@@ -19,16 +19,16 @@ from scipy.integrate import dblquad
 
 def w(n):
     if n<0:
-        return d
+        return float(d)
     else:
-        return d+2*n
+        return d+2.*n
 
 def x_0(d):
-    x_0 = 6*(gamma(3*d/2)*(gamma(d))**2)/(gamma(2*d)*(gamma(d/2))**3)
+    x_0 = 6*(gamma(3*d/2.)*(gamma(d))**2)/(gamma(2*d)*(gamma(d/2.))**3)
     return x_0
     
 def y_0(d):
-    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2) - 1)*(gamma(d/2 - 1/2))**2)/(math.pi*gamma(2*d)*gamma(d/2))
+    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2.) - 1)*(gamma(d/2 - 1/2))**2)/(math.pi*gamma(2*d)*gamma(d/2))
     return y_0
     
 def W_00naught(d):
@@ -37,7 +37,7 @@ def W_00naught(d):
     return I
     
 def v_0(d):
-    return 2*gamma(d)/((d+1)*(gamma(d/2))**2)
+    return 2*gamma(d)/((d+1.)*(gamma(d/2))**2)
     
 def c(i):
     return 2*math.sqrt(d-2)*math.sqrt(math.factorial(i + d -1)/math.factorial(i))/gamma(d/2)
@@ -51,13 +51,13 @@ def chi(x):
         for j in range(0,i+1):
             for k in range(0,j+1):
                 for l in range(0,k+1):
-                    x.T[i][j][k][l] = (((2*(w(i-1)+1))/(math.sqrt((i)*(i-1+d))))*(1/(2+w(i-1) \
-                    + w(j) + w(k) + w(l))))*(((d-1)/2)*((w(j)**2)/(w(j)-1) + (w(k)**2)/(w(k)-1) \
+                    x.T[i][j][k][l] = (((2*(w(i-1)+1))/(math.sqrt((i)*(i-1.+d))))*(1./(2+w(i-1) \
+                    + w(j) + w(k) + w(l))))*(((d-1)/2.)*((w(j)**2)/(w(j)-1.) + (w(k)**2)/(w(k)-1) \
                     + (w(l)**2)/(w(l)-1) - ((w(i-1)**2)/(w(i-1)**2 -1))*(1+w(j)+w(k)+w(l)))*x.getel(i-1,j,k,l) \
-                    + ((w(j)*math.sqrt(j*(j+d-1)))/(w(j)-1))*x.getel(i-1,j-1,k,l) \
-                    + ((w(k)*math.sqrt(k*(k+d-1)))/(w(k)-1))*x.getel(i-1,j,k-1,l) \
-                    + ((w(l)*math.sqrt(l*(l+d-1)))/(w(l)-1))*x.getel(i-1,j,k,l-1) \
-                    - (2+w(j)+w(k)+w(l)-w(i-1))*((math.sqrt((i-1)*(i+d-2)))/(2*(w(i-1)-1)))*x.getel(i-2,j,k,l))
+                    + ((w(j)*math.sqrt(j*(j+d-1.)))/(w(j)-1))*x.getel(i-1,j-1,k,l) \
+                    + ((w(k)*math.sqrt(k*(k+d-1.)))/(w(k)-1))*x.getel(i-1,j,k-1,l) \
+                    + ((w(l)*math.sqrt(l*(l+d-1.)))/(w(l)-1))*x.getel(i-1,j,k,l-1) \
+                    - (2+w(j)+w(k)+w(l)-w(i-1.))*((math.sqrt((i-1.)*(i+d-2)))/(2*(w(i-1)-1)))*x.getel(i-2,j,k,l))
     return x    
 
 # Recursion relation for psi that takes rt.symmat(L) objects
@@ -66,11 +66,11 @@ def psi(y):
         for j in range(0,i+1):
             for k in range(0,j+1):
                 for l in range(0,k+1):
-                    y.T[i][j][k][l] = 2*(w(i-1)+1)*(-(d-1)*((w(i-1)**2 -2 -w(j)-w(k)-w(l))/(w(i-1)**2 -1) - 6 + w(j)/(w(j)-1) \
-                    + w(k)/(w(k)-1) + w(l)/(w(l)-1))*y.getel(i-1,j,k,l)/2 + (w(i-1)-w(j)-w(k)-w(l)-2)*math.sqrt((i-1)*(i+d-2))*y.getel(i-2,j,k,l)/(2*(w(i-1)-1)) \
-                    + w(j)*math.sqrt(j*(j+d-1))*y.getel(i-1,j-1,k,l)/(w(j)-1) \
-                    + w(k)*math.sqrt(k*(k+d-1))*y.getel(i-1,j,k-1,l)/(w(k)-1) \
-                    + w(l)*math.sqrt(l*(l+d-1))*y.getel(i-1,j,k,l-1)/(w(l)-1))/((2+w(i-1)+w(j)+w(k)+w(l))*math.sqrt(i*(i+d-1)))
+                    y.T[i][j][k][l] = 2*(w(i-1)+1)*(-(d-1)*((w(i-1)**2 -2 -w(j)-w(k)-w(l))/(w(i-1)**2 -1.) - 6 + w(j)/(w(j)-1.) \
+                    + w(k)/(w(k)-1) + w(l)/(w(l)-1))*y.getel(i-1,j,k,l)/2. + (w(i-1)-w(j)-w(k)-w(l)-2)*math.sqrt((i-1)*(i+d-2.))*y.getel(i-2,j,k,l)/(2*(w(i-1)-1.)) \
+                    + w(j)*math.sqrt(j*(j+d-1.))*y.getel(i-1,j-1,k,l)/(w(j)-1) \
+                    + w(k)*math.sqrt(k*(k+d-1.))*y.getel(i-1,j,k-1,l)/(w(k)-1) \
+                    + w(l)*math.sqrt(l*(l+d-1.))*y.getel(i-1,j,k,l-1)/(w(l)-1))/((2.+w(i-1)+w(j)+w(k)+w(l))*math.sqrt(i*(i+d-1.)))
     return y
     
 # Use chi to compute X
@@ -80,9 +80,9 @@ def makeX(x):
             for k in range(0,j+1):
                 for l in range(0,k+1):
                     try:
-                        X.T[i][j][k][l] = w(i)*(math.sqrt((i+1)*(i+d))*x.getel(i+1,j,k,l)/(2*(w(i)+1)) \
-                        - math.sqrt(i*(i+d-1))*x.getel(i-1,j,k,l)/(2*(w(i)-1)) \
-                        - (d-1)*w(i)*x.getel(i,j,k,l)/(2*(w(i)**2 - 1)))
+                        X.T[i][j][k][l] = w(i)*(math.sqrt((i+1.)*(i+d))*x.getel(i+1,j,k,l)/(2*(w(i)+1)) \
+                        - math.sqrt(i*(i+d-1.))*x.getel(i-1,j,k,l)/(2*(w(i)-1.)) \
+                        - (d-1)*w(i)*x.getel(i,j,k,l)/(2*(w(i)**2 - 1.)))
                     except IndexError:
                         print("Index error for X.T[%d][%d][%d][%d]" % (i,j,k,l))
                         pass
@@ -95,15 +95,16 @@ def makeY(y):
             for k in range(0,Y.dim):
                 for l in range(0,k+1):
                     try:
-                        Y.T[i][j][k][l] = w(i)*w(k)*w(l)*(math.sqrt(j*(j+d-1))*y.getel(i,j-1,k,l)/(2*(w(j)-1)) \
-                        - math.sqrt((j+1)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1)) \
-                        -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1)))
+                        Y.T[i][j][k][l] = w(i)*w(k)*w(l)*(math.sqrt(j*(j+d-1.))*y.getel(i,j-1,k,l)/(2*(w(j)-1.)) \
+                        - math.sqrt((j+1.)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1.)) \
+                        -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1.)))
                     except IndexError:
                         print("Index error for Y.T[%d][%d][%d][%d]" % (i,j,k,l))
                         pass
     return Y
 
 # Use X,Y to compute S
+""" Verified against integrals and Recursion.mw""" 
 def makeS(X,Y):
     for i in range(0,S.dim):
         for j in range(0,S.dim):
@@ -124,12 +125,12 @@ def makeW_00_zeros():
     for i in range(0,W_00.dim):
         for j in range(0,W_00.dim):
             try:
-                print("W_00.T =", W_00.T, "\n")                
-                print("W_00.T[%d][%d][%d][%d] =" % (i,j,0,0), W_00.getelW(i,j,0,0), "\n")
-                print("W_00.T[%d][%d][%d][%d] =" % (j,i,0,0), W_00.getelW(j,i,0,0), "\n")
-                print("W_00.T[%d][%d][%d][%d] = %f" % (i-1,j,0,0,W_00.getelW(i-1,j,0,0)), "\n")
-                print("W_00.T[%d][%d][%d][%d] = %f" % (i,j-1,0,0,W_00.getelW(i,j-1,0,0)), "\n")
-                print("Calculating W_00.T[%d][%d][%d][%d]" % (i+1,j,0,0), "\n")
+                #print("W_00.T =", W_00.T, "\n")                
+                #print("W_00.T[%d][%d][%d][%d] =" % (i,j,0,0), W_00.getelW(i,j,0,0), "\n")
+                #print("W_00.T[%d][%d][%d][%d] =" % (j,i,0,0), W_00.getelW(j,i,0,0), "\n")
+                #print("W_00.T[%d][%d][%d][%d] = %f" % (i-1,j,0,0,W_00.getelW(i-1,j,0,0)), "\n")
+                #print("W_00.T[%d][%d][%d][%d] = %f" % (i,j-1,0,0,W_00.getelW(i,j-1,0,0)), "\n")
+                #print("Calculating W_00.T[%d][%d][%d][%d]" % (i+1,j,0,0), "\n")
                 W_00.T[i+1][j][0][0] = 2*(w(i)+1)*((d-1)*((w(i)**2 - w(j) - 4)/(w(i)**2 -1) + w(j)/(w(j)-1))*W_00.getelW(i,j,0,0)/2 \
                 + math.sqrt(i*(i+d-1))*(w(i)-w(j)-4)*W_00.getelW(i-1,j,0,0)/(2*(w(i)-1)) \
                 + math.sqrt(j*(j+d-1))*w(j)*W_00.getelW(i,j-1,0,0)/(w(j)-1) \
@@ -150,8 +151,8 @@ def makeW_00():
                 for l in range(0,k+1):
                     if k == l:
                         try:
-                            print("W_00.T[%d][%d][%d][%d] =" % (i,j,k,k), W_00.getelW(i,j,k,k), "\n")
-                            print("Calculating W_00.T[%d][%d][%d][%d]" % (i,j,k+1,k+1), "\n")
+                            #print("W_00.T[%d][%d][%d][%d] =" % (i,j,k,k), W_00.getelW(i,j,k,k), "\n")
+                            #print("Calculating W_00.T[%d][%d][%d][%d]" % (i,j,k+1,k+1), "\n")
                             W_00.T[i][j][k+1][k+1] = W_00.getelW(i,j,k,k) \
                             + ((w(k)+1)*(d-1)/math.sqrt((k+1)*(k+d)))*(1/(w(k+1)**2 -1) - 1/(w(k)**2 -1))*(X.getel3(k+1,i,j,k) - X.getel3(k,i,j,k+1))/(w(k)**2 - w(k+1)**2) \
                             + ((w(k)+1)*(math.sqrt((k+2)*(k+d+1)))/((w(k+1)+1)*math.sqrt((k+1)*(k+d))))*(X.getel3(k+2,i,j,k)-X.getel3(k,i,j,k+2))/(w(k)**2 - w(k+2)**2) \
@@ -200,25 +201,18 @@ def makeR():
                 + (w(i)**2)*(W_10.getelW(j,j,i,i)) + (w(j)**2)*(W_10.getelW(i,i,j,j)) \
                 - (w(j)**2)*(A.getel2Dsym(i,i) + (w(i)**2)*V.getel2Dsym(i,i))
     return R
-    
+
+
+""" Verified against integrals and PIvals.py"""    
 def makeV():
     for i in range(1,V.dim):
         for j in range(0,i+1):
-            try:
-                print("V.B =", V.B, "\n")
-                print("Cacluating V.B[%d][%d]" % (i,j), "\n")
-                print("V.B[%d][%d] =" % (i-1,j), V.getel2Dsym(i-1,j), "\n")
-                print("V.B[%d][%d] =" % (i-2,j), V.getel2Dsym(i-2,j), "\n")
-                print("V.B[%d][%d] =" % (i-1,j-1), V.getel2Dsym(i-1,j-1), "\n")
-                V.B[i][j] = 2.*(w(i-1)+1)*((d-1)*((w(i-1)**2 - w(j)-4)/(w(i-1)**2 -1) + w(j)/(w(j)-1))*V.getel2Dsym(i-1,j)/2. \
-                + (w(i-1) - w(j) -4)*math.sqrt((i-1)*(i+d-2.))*V.getel2Dsym(i-2,j)/(2.*(w(i-1)-1)) \
-                + w(j)*math.sqrt(j*(j+d-1.))*V.getel2Dsym(i-1,j-1)/(w(j)-1.))/(math.sqrt(i*(i+d-1.))*(w(i-1)+w(j)+4.))
-                
-            except IndexError:
-                print("V[%d][%d] is out of range" % (i+1,j))
-                pass
+            V.B[i][j] = 2.*(w(i-1)+1)*((d-1)*((w(i-1)**2 - w(j)-4)/(w(i-1)**2 -1) + w(j)/(w(j)-1))*V.getel2Dsym(i-1,j)/2. \
+            + (w(i-1) - w(j) -4)*math.sqrt((i-1)*(i+d-2.))*V.getel2Dsym(i-2,j)/(2.*(w(i-1)-1)) \
+            + w(j)*math.sqrt(j*(j+d-1.))*V.getel2Dsym(i-1,j-1)/(w(j)-1.))/(math.sqrt(i*(i+d-1.))*(w(i-1)+w(j)+4.)) 
     return V
-    
+
+""" Verified against integrals and PIvals.py"""     
 def makeA():
     for i in range(0,L):
             A.B[i][i] = (w(i)**2 + w(i)**2 -4)*V.getel2Dsym(i,i)/2 -c(i)*c(i)/2
@@ -277,7 +271,7 @@ def outputs(X,Y,R,T,S):
 """
 Maximum "level" to be calculated, L (non-inclusive), and number of dimensions, d
 """
-L=3
+L=28
 d=3
 
 """
@@ -314,10 +308,10 @@ sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S
 S = rt.symmat(L+2)
 S.buildnone()
 makeS(X,Y)
-#for i in range(0,S.dim):
- #       for j in range(0,S.dim):
-  #          for k in range(0,S.dim):
-   #             for l in range(0,S.dim):
+#for i in range(0,S.dim-2):
+ #       for j in range(0,S.dim-2):
+  #          for k in range(0,S.dim-2):
+   #             for l in range(0,S.dim-2):
     #                if i ==k or j==k:
      #                   pass
       #              else:
@@ -327,9 +321,10 @@ makeS(X,Y)
 """
 Both R and T require calculating W_00 and W_10 first; W_00 can only be calculated to level L
 """
+
 # W_00 is computed to level L
 W_00 = rt.symmat(L)
-W_00.build2()
+"""W_00.build2()
 W_00.T[0][0][0][0] = W_00naught(d)[0]
 makeW_00_zeros()
 #print("W_00_zeros =", W_00.T, "\n") 
@@ -340,43 +335,56 @@ makeW_00()
 W_10 = rt.symmat(L)
 W_10.build2()
 makeW_10()
-print("W_10[%d][%d][%d][%d] =" % (0,0,0,0), W_10.getelW(0,0,0,0), "\n")
-print("W_10[%d][%d][%d][%d] =" % (1,1,0,0), W_10.getelW(1,1,0,0), "\n")
-print("W_10[%d][%d][%d][%d] =" % (1,1,1,1), W_10.getelW(1,1,1,1), "\n")
-print("W_10[%d][%d][%d][%d] =" % (2,2,0,0), W_10.getelW(2,2,0,0), "\n")
-print("W_10[%d][%d][%d][%d] =" % (2,2,1,1), W_10.getelW(2,2,1,1), "\n")
-print("W_10[%d][%d][%d][%d] =" % (2,2,2,2), W_10.getelW(2,2,2,2), "\n")
+#print("W_10[%d][%d][%d][%d] =" % (0,0,0,0), W_10.getelW(0,0,0,0), "\n")
+#print("W_10[%d][%d][%d][%d] =" % (1,1,0,0), W_10.getelW(1,1,0,0), "\n")
+#print("W_10[%d][%d][%d][%d] =" % (1,1,1,1), W_10.getelW(1,1,1,1), "\n")
+#print("W_10[%d][%d][%d][%d] =" % (2,2,0,0), W_10.getelW(2,2,0,0), "\n")
+#print("W_10[%d][%d][%d][%d] =" % (2,2,1,1), W_10.getelW(2,2,1,1), "\n")
+#print("W_10[%d][%d][%d][%d] =" % (2,2,2,2), W_10.getelW(2,2,2,2), "\n")
 
 """
+"""
 Additional coefficients in the interior time gauge, V and A are calculated up to level L
+"""
 """
 V = rt.symmat(L)
 V.build2Dsym()
 V.B[0][0] = v_0(d)
 makeV()
-print("V =",V.B,"\n")
+#print("V =",V.B,"\n")
 A = rt.symmat(L)
 A.build2Dsym()
 makeA()
 #print("A =",A.B,"\n")
 
 """
-Now use the results of W_00 and W_10 to calculate R and T up to level L
-"""
+#Now use the results of W_00 and W_10 to calculate R and T up to level L 
+
 # T is computed to level L
-T = makeT()
+#T = makeT()
 #print("T =", T, "\n")
 # R is computed to level L
-R = rt.symmat(L)
-R.build2D()
-makeR()
+#R = rt.symmat(L)
+#R.build2D()
+#makeR()
 #print("R =", R.B, "\n") 
 
-"""
-Finally, output the results into individual files
-"""
+
+#Finally, output the results into individual files
+
 #outputs(X,Y,R,T,S)
 
+with open("d3S.dat","w") as s:
+        for i in range(0,S.dim):
+            for j in range(0,S.dim):
+                for k in range(0,S.dim):
+                    for l in range(0,S.dim):
+                        try:
+                            s.write("%d %d %d %d %.14e \n" % (i,j,k,l,S.T[i][j][k][l]))
+                        except TypeError:
+                            s.write("%d %d %d %d None \n" % (i,j,k,l))
+        print("Wrote S to %s" % s.name)
+        print("Done")
     
     
     
