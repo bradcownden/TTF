@@ -28,11 +28,11 @@ def x_0(d):
     return x_0
     
 def y_0(d):
-    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2.) - 1)*(gamma(d/2 - 1/2))**2)/(math.pi*gamma(2*d)*gamma(d/2))
+    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2.) - 1)*(gamma(d/2 - 1/2.))**2)/(math.pi*gamma(2*d)*gamma(d/2))
     return y_0
     
 def W_00naught(d):
-    I = dblquad(lambda x,y: ((16*(gamma(d))**2)/((gamma(d/2))**4))*((math.cos(x))**(2*d))*((math.tan(x))**(d-1))*((math.cos(y))**(2*d+1))*(math.sin(y)), \
+    I = dblquad(lambda x,y: ((16.*(gamma(d))**2)/((gamma(d/2.))**4))*((math.cos(x))**(2*d))*((math.tan(x))**(d-1))*((math.cos(y))**(2*d+1))*(math.sin(y)), \
     0,math.pi/2, lambda x:0, lambda x:x)
     return I
     
@@ -40,7 +40,7 @@ def v_0(d):
     return 2*gamma(d)/((d+1.)*(gamma(d/2))**2)
     
 def c(i):
-    return 2*math.sqrt(d-2)*math.sqrt(math.factorial(i + d -1)/math.factorial(i))/gamma(d/2)
+    return 2*math.sqrt(d-2)*math.sqrt(math.factorial(i + d -1)/math.factorial(i))/gamma(d/2.)
 
 ###############################################################################
 ###############################################################################
@@ -271,7 +271,7 @@ def outputs(X,Y,R,T,S):
 """
 Maximum "level" to be calculated, L (non-inclusive), and number of dimensions, d
 """
-L=28
+L=1
 d=3
 
 """
@@ -282,10 +282,12 @@ x.build()
 x.T[0][0][0][0] = x_0(d)
 chi(x)
 #print("x.T =", x.T,"\n")
+print(x.T[0][0][0][0])
 y = rt.symmat(L+3)
 y.build()
 y.T[0][0][0][0] = y_0(d)
 psi(y)
+print(y.T[0][0][0][0])
 #print("y.T =", y.T, "\n")
 
 """
@@ -294,12 +296,12 @@ Using chi and psi, X and Y are computed to level L+2
 X = rt.symmat(L+2)
 X.build3()
 makeX(x)
-#print("X =", X.T, "\n")
+print("X =", X.T, "\n")
 
 Y = rt.symmat(L+2)
 Y.build2()
 makeY(y)
-#print("Y =", Y.T,"\n")
+print("Y =", Y.T,"\n")
 
 """
 S is computed to level L+2 using X and Y. Note that values prohibited by the restricted
@@ -308,15 +310,15 @@ sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S
 S = rt.symmat(L+2)
 S.buildnone()
 makeS(X,Y)
-#for i in range(0,S.dim-2):
- #       for j in range(0,S.dim-2):
-  #          for k in range(0,S.dim-2):
-   #             for l in range(0,S.dim-2):
-    #                if i ==k or j==k:
-     #                   pass
-      #              else:
-       #                 print("S[%d][%d][%d][%d] = %f" % (i,j,k,l,S.T[i][j][k][l]), "\n")
-#print("S =", S.T,"\n")
+for i in range(0,S.dim):
+        for j in range(0,S.dim):
+            for k in range(0,S.dim):
+                for l in range(0,S.dim):
+                    if i ==k or j==k:
+                        pass
+                    else:
+                        print("S[%d][%d][%d][%d] = %f" % (i,j,k,l,S.T[i][j][k][l]), "\n")
+print("S =", S.T,"\n")
 
 """
 Both R and T require calculating W_00 and W_10 first; W_00 can only be calculated to level L
@@ -374,19 +376,26 @@ makeA()
 
 #outputs(X,Y,R,T,S)
 
-with open("d3S.dat","w") as s:
-        for i in range(0,S.dim):
-            for j in range(0,S.dim):
-                for k in range(0,S.dim):
-                    for l in range(0,S.dim):
-                        try:
-                            s.write("%d %d %d %d %.14e \n" % (i,j,k,l,S.T[i][j][k][l]))
-                        except TypeError:
-                            s.write("%d %d %d %d None \n" % (i,j,k,l))
-        print("Wrote S to %s" % s.name)
-        print("Done")
-    
-    
+#with open("d3S.dat","w") as s:
+ #       for i in range(0,S.dim):
+  #          for j in range(0,S.dim):
+   #             for k in range(0,S.dim):
+    #                for l in range(0,S.dim):
+     #                   try:
+      #                      s.write("%d %d %d %d %.14e \n" % (i,j,k,l,S.T[i][j][k][l]))
+       #                 except TypeError:
+        #                    s.write("%d %d %d %d None \n" % (i,j,k,l))
+        #print("Wrote S to %s" % s.name)
+        #print("Done")
+"""
+with open("d3X.dat","w") as x:
+       for i in range(0,X.dim):
+           for j in range(0,i+1):
+               for k in range(0,j+1):
+                   for l in range(0,k+1):
+                       x.write("%d %d %d %d %.14e \n" % (i,j,k,l,X.T[i][j][k][l]))
+       print("Wrote X to %s" % x.name)    
+    """
     
     
 
