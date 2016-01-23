@@ -24,11 +24,11 @@ def w(n):
         return d+2.*n
 
 def x_0(d):
-    x_0 = 6*(gamma(3*d/2.)*(gamma(d))**2)/(gamma(2*d)*(gamma(d/2.))**3)
+    x_0 = 6.*(gamma(3*d/2.))*((gamma(d))**2)/(gamma(2.*d)*(gamma(d/2.))**3)
     return x_0
     
 def y_0(d):
-    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2.) - 1)*(gamma(d/2 - 1/2.))**2)/(math.pi*gamma(2*d)*gamma(d/2))
+    y_0 = ((2**(2*d -2))*(2+d)*gamma((3*d/2.) - 1)*(gamma(d/2. - 1/2.))**2)/(math.pi*gamma(2.*d)*gamma(d/2.))
     return y_0
     
 def W_00naught(d):
@@ -37,7 +37,7 @@ def W_00naught(d):
     return I
     
 def v_0(d):
-    return 2*gamma(d)/((d+1.)*(gamma(d/2))**2)
+    return 2*gamma(float(d))/((d+1.)*(gamma(d/2.))**2)
     
 def c(i):
     return 2*math.sqrt(d-2)*math.sqrt(math.factorial(i + d -1)/math.factorial(i))/gamma(d/2.)
@@ -58,6 +58,8 @@ def chi(x):
                     + ((w(k)*math.sqrt(k*(k+d-1.)))/(w(k)-1))*x.getel(i-1,j,k-1,l) \
                     + ((w(l)*math.sqrt(l*(l+d-1.)))/(w(l)-1))*x.getel(i-1,j,k,l-1) \
                     - (2+w(j)+w(k)+w(l)-w(i-1.))*((math.sqrt((i-1.)*(i+d-2)))/(2*(w(i-1)-1)))*x.getel(i-2,j,k,l))
+        if i%50 == 0:
+            print("Completed up to L = %d" % i)
     return x    
 
 # Recursion relation for psi that takes rt.symmat(L) objects
@@ -71,6 +73,8 @@ def psi(y):
                     + w(j)*math.sqrt(j*(j+d-1.))*y.getel(i-1,j-1,k,l)/(w(j)-1) \
                     + w(k)*math.sqrt(k*(k+d-1.))*y.getel(i-1,j,k-1,l)/(w(k)-1) \
                     + w(l)*math.sqrt(l*(l+d-1.))*y.getel(i-1,j,k,l-1)/(w(l)-1))/((2.+w(i-1)+w(j)+w(k)+w(l))*math.sqrt(i*(i+d-1.)))
+        if i%25 == 0:
+            print("Completed up to L = %d" % i)
     return y
     
 # Use chi to compute X
@@ -84,7 +88,7 @@ def makeX(x):
                         - math.sqrt(i*(i+d-1.))*x.getel(i-1,j,k,l)/(2*(w(i)-1.)) \
                         - (d-1)*w(i)*x.getel(i,j,k,l)/(2*(w(i)**2 - 1.)))
                     except IndexError:
-                        print("Index error for X.T[%d][%d][%d][%d]" % (i,j,k,l))
+                        #print("Index error for X.T[%d][%d][%d][%d]" % (i,j,k,l))
                         pass
     return X
     
@@ -99,7 +103,7 @@ def makeY(y):
                         - math.sqrt((j+1.)*(j+d))*y.getel(i,j+1,k,l)/(2*(w(j)+1.)) \
                         -(d-1)*w(j)*y.getel(i,j,k,l)/(2*(w(j)**2 -1.)))
                     except IndexError:
-                        print("Index error for Y.T[%d][%d][%d][%d]" % (i,j,k,l))
+                        #print("Index error for Y.T[%d][%d][%d][%d]" % (i,j,k,l))
                         pass
     return Y
 
@@ -112,12 +116,12 @@ def makeS(X,Y):
                 for l in range(0,S.dim):
                     if i ==k or j==k:
                         pass
-#                        print("S[%d][%d][%d][%d] does not exist due to restricted sum" % (i,j,k,l))
+                        #print("S[%d][%d][%d][%d] does not exist due to restricted sum" % (i,j,k,l))
                     else:
-                        S.T[i][j][k][l] = -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(j)*w(k)*X.getel3(l,i,j,k) - w(l)*Y.getel2(i,l,j,k))/4 \
-                        -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(j)*w(k)*w(l)*X.getel3(i,j,k,l) - w(i)*Y.getel2(j,i,k,l))/4 \
-                        -(1/(w(i)+w(j)) - 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(k)*w(l)*X.getel3(j,i,k,l) - w(j)*Y.getel2(i,j,k,l))/4 \
-                        -(1/(w(i)+w(j)) - 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(i)*w(j)*w(l)*X.getel3(k,i,j,l) - w(k)*Y.getel2(i,k,j,l))/4
+                        S.T[i][j][k][l] = -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(j)*w(k)*X.getel3(l,i,j,k) - w(l)*Y.getel2(i,l,j,k))/4. \
+                        -(1/(w(i)+w(j)) + 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(j)*w(k)*w(l)*X.getel3(i,j,k,l) - w(i)*Y.getel2(j,i,k,l))/4. \
+                        -(1/(w(i)+w(j)) - 1/(w(i)-w(k)) + 1/(w(j)-w(k)))*(w(i)*w(k)*w(l)*X.getel3(j,i,k,l) - w(j)*Y.getel2(i,j,k,l))/4. \
+                        -(1/(w(i)+w(j)) - 1/(w(i)-w(k)) - 1/(w(j)-w(k)))*(w(i)*w(j)*w(l)*X.getel3(k,i,j,l) - w(k)*Y.getel2(i,k,j,l))/4.
     return S
 
 # W_00 requires different recursion relations for k=l=0. Build these first.                    
@@ -271,45 +275,53 @@ def outputs(X,Y,R,T,S):
 """
 Maximum "level" to be calculated, L (non-inclusive), and number of dimensions, d
 """
-L=1
+L=7
 d=3
 
 """
 Chi and psi must be calculated to level L+3
 """
-x = rt.symmat(L+3)
-x.build()
-x.T[0][0][0][0] = x_0(d)
-chi(x)
+
+Chi = rt.symmat(L+3)
+Chi.build()
+Chi.T[0][0][0][0] = x_0(d)
+chi(Chi)
 #print("x.T =", x.T,"\n")
-print(x.T[0][0][0][0])
-y = rt.symmat(L+3)
-y.build()
-y.T[0][0][0][0] = y_0(d)
-psi(y)
-print(y.T[0][0][0][0])
+
+
+Psi = rt.symmat(L+3)
+Psi.build()
+Psi.T[0][0][0][0] = y_0(d)
+psi(Psi)
+
+
 #print("y.T =", y.T, "\n")
 
 """
 Using chi and psi, X and Y are computed to level L+2
 """
+
 X = rt.symmat(L+2)
 X.build3()
-makeX(x)
-print("X =", X.T, "\n")
+makeX(Chi)
+#print("X =", X.T, "\n")
 
 Y = rt.symmat(L+2)
 Y.build2()
-makeY(y)
-print("Y =", Y.T,"\n")
+makeY(Psi)
+#print("Y =", Y.T,"\n")
+
+
 
 """
 S is computed to level L+2 using X and Y. Note that values prohibited by the restricted
 sums from equation 7 in ArXiv:1508.04943 will remain as "None" in S 
 """
+
 S = rt.symmat(L+2)
 S.buildnone()
 makeS(X,Y)
+"""
 for i in range(0,S.dim):
         for j in range(0,S.dim):
             for k in range(0,S.dim):
@@ -319,6 +331,7 @@ for i in range(0,S.dim):
                     else:
                         print("S[%d][%d][%d][%d] = %f" % (i,j,k,l,S.T[i][j][k][l]), "\n")
 print("S =", S.T,"\n")
+"""
 
 """
 Both R and T require calculating W_00 and W_10 first; W_00 can only be calculated to level L
@@ -376,27 +389,64 @@ makeA()
 
 #outputs(X,Y,R,T,S)
 
-#with open("d3S.dat","w") as s:
- #       for i in range(0,S.dim):
-  #          for j in range(0,S.dim):
-   #             for k in range(0,S.dim):
-    #                for l in range(0,S.dim):
-     #                   try:
-      #                      s.write("%d %d %d %d %.14e \n" % (i,j,k,l,S.T[i][j][k][l]))
-       #                 except TypeError:
-        #                    s.write("%d %d %d %d None \n" % (i,j,k,l))
-        #print("Wrote S to %s" % s.name)
-        #print("Done")
-"""
-with open("d3X.dat","w") as x:
+with open("d3S_L10.dat","w") as s:
+        for i in range(0,S.dim):
+            for j in range(0,S.dim):
+                for k in range(0,S.dim):
+                    for l in range(0,S.dim):
+                        try:
+                            s.write("%d %d %d %d %.14e \n" % (i,j,k,l,S.T[i][j][k][l]))
+                        except TypeError:
+                            s.write("%d %d %d %d None \n" % (i,j,k,l))
+        print("Wrote S to %s" % s.name)
+
+
+with open("d3X_L10.dat","w") as x:
        for i in range(0,X.dim):
            for j in range(0,i+1):
                for k in range(0,j+1):
                    for l in range(0,k+1):
                        x.write("%d %d %d %d %.14e \n" % (i,j,k,l,X.T[i][j][k][l]))
        print("Wrote X to %s" % x.name)    
-    """
-    
-    
-
-
+       
+with open("d3Y_L10.dat","w") as y:
+       for i in range(0,Y.dim):
+           for j in range(0,Y.dim):
+               for k in range(0,j+1):
+                   for l in range(0,k+1):
+                       y.write("%d %d %d %d %.14e \n" % (i,j,k,l,Y.T[i][j][k][l]))
+       print("Wrote Y to %s" % y.name)           
+       
+       
+"""
+with open("/Users/bradc/Documents/University_of_Manitoba/Research_2015/TTF/TtfEvolution/Psi_50.dat","w") as y:
+       for i in range(0,Psi.dim):
+           for j in range(0,i+1):
+               for k in range(0,j+1):
+                   for l in range(0,k+1):
+                       y.write("%d %d %d %d %.14e \n" % (i,j,k,l,Psi.T[i][j][k][l]))
+       print("Wrote Psi to %s" % y.name)    
+       
+       
+with open("/Users/bradc/Documents/University_of_Manitoba/Research_2015/TTF/TtfEvolution/Chi_50.dat","w") as x:
+       for i in range(0,Chi.dim):
+           for j in range(0,i+1):
+               for k in range(0,j+1):
+                   for l in range(0,k+1):
+                       x.write("%d %d %d %d %.14e \n" % (i,j,k,l,Chi.T[i][j][k][l]))
+       print("Wrote Chi to %s" % x.name)           
+"""
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
