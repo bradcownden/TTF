@@ -64,6 +64,15 @@ def V(i,j,d):
 def T(i,d):
     return ((w(i,d)**2)*(Xval(i,i,i,i))/2. + 3*(Yval(i,i,i,i))/2. + 2*(w(i,d)**4)*W00(i,i,i,i,d) + 2*(w(i,d)**2)*W10(i,i,i,i,d) \
     - (w(i,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
+    
+def R(i,j,d):
+    return (((w(i,d)**2 + w(j,d)**2)/(w(j,d)**2 - w(i,d)**2))*((w(j,d)**2)*Xval(i,j,j,i) - (w(i,d)**2)*Xval(j,i,i,j))/2. \
+                + 2*((w(j,d)**2)*Yval(i,j,i,j) - (w(i,d)**2)*Yval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
+                + (Yval(i,i,j,j) + Yval(j,j,i,i))/2. \
+                +(w(i,d)**2)*(w(j,d)**2)*(Xval(i,j,j,i) - Xval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
+                + (w(i,d)**2)*(w(j,d)**2)*(W00(j,j,i,i,d) + W00(i,i,j,j,d)) \
+                + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
+                - (w(j,d)**2)*(A(i,i,d) + (w(i)**2)*V(i,i,d)))
             
 def Xval(i,j,k,l):
     temp = sorted([i,j,k,l],reverse=True)
