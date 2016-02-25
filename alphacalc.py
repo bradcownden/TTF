@@ -18,6 +18,7 @@ from sympy import lambdify, jacobi
 from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
+from scipy.optimize import newton_krylov
 
 ###################################################################
 ###################################################################
@@ -58,21 +59,18 @@ def Xval(i,j,k,l):
     for i in range(X.shape[0]):
         if X[i][0]==temp[0] and X[i][1]==temp[1] and X[i][2]==temp[2] and X[i][3]==temp[3]:
             return X[i][4]
-            break
 
 def Yval(i,j,k,l):
     temp = sorted([k,l],reverse=True)
     for row in range(Y.shape[0]):
         if Y[row][0]==i and Y[row][1]==j and Y[row][2]==temp[0] and Y[row][3]==temp[1]:
             return Y[row][4]
-            break
     print("Y[%d][%d][%d][%d] not found" % (i,j,temp[0],temp[1]))
 
 def Sval(i,j,k,l):
     for row in range(S.shape[0]):
         if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
             return S[row][4]
-            break
     print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
                     
 
@@ -114,31 +112,64 @@ def R(i,j,d):
                 + (w(i,d)**2)*(w(j,d)**2)*(W00(j,j,i,i,d) + W00(i,i,j,j,d)) \
                 + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
                 - (w(j,d)**2)*(A(i,i,d) + (w(i)**2)*V(i,i,d)))
-            
+   
+"""
+Define initial values of a and b based on a0 = 1.0, a1 = 0.1 and the first two terms
+of the QP mode equation
+"""
+
+# These two values are the only inputs
+a0 = 1.0
+a1 = 0.1
+          
+def b0(d):
+    return -2.0*T(0,d)/w(0,d)
+
+def ains(i):
+    if i == 0:
+        return a0
+    if i == 1:
+        return a1
+    else:
+        print("Not an initial condition for a")
+    
+def b1(a0,a1,d):
+    const = 0
+    for i in range(2):
+        for j in range(i+1):
+            for k in range(j+1):
+                const = const + Sval(1,i,j,k)*ains(i)*ains(j)*ains(k)
+    return -1.0*(4.0*T(1,d)*ains(1)**3 + 4*R(1,0)*ains(1) + 4.0*const)/(2.0*w(1,d)*ains(1))
+                
+
+    
+    
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###################################################################
+###################################################################
 
 print("X[2][1][0][0] =", Xval(1,2,0,0))
 print("Y[1][2][0][2] =", Yval(1,2,0,2))
 print("S[0][0][1][0] =", Sval(0,0,1,0))
-    
-    
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print("T[0] =", T(0,3))
 
 ###################################################################
 ###################################################################
