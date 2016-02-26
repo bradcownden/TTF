@@ -31,6 +31,13 @@ S = np.genfromtxt("d3S_L10.dat")
 X = np.genfromtxt("d3X_L10.dat")
 Y = np.genfromtxt("d3Y_L10.dat")
 
+"""
+Read in T,R from Mathematica output
+"""
+
+R = np.genfromtxt("Mathematica_R.dat")
+T = np.genfromtxt("Mathematica_T.dat")
+
 
 ###################################################################
 ###################################################################
@@ -52,13 +59,16 @@ def ep(i,d):
     return lambdify(t,f)
     
 """
-Functions to extract the desired X(i,j,k,l) from the recursion outputs.
+Functions to extract the desired tensor elements from the recursion outputs.
 """
 def Xval(i,j,k,l):
-    temp = sorted([i,j,k,l],reverse=True)
-    for i in range(X.shape[0]):
-        if X[i][0]==temp[0] and X[i][1]==temp[1] and X[i][2]==temp[2] and X[i][3]==temp[3]:
-            return X[i][4]
+    temp = sorted([j,k,l],reverse=True)
+    for row in range(X.shape[0]):
+        if X[row][0]==i and X[row][1]==temp[0] and X[row][2]==temp[1] and X[row][3]==temp[2]:
+            return X[row][4] 
+    print("X[%d][%d][%d][%d] not found" % (i,j,k,l))
+    return 0
+    
 
 def Yval(i,j,k,l):
     temp = sorted([k,l],reverse=True)
@@ -66,13 +76,28 @@ def Yval(i,j,k,l):
         if Y[row][0]==i and Y[row][1]==j and Y[row][2]==temp[0] and Y[row][3]==temp[1]:
             return Y[row][4]
     print("Y[%d][%d][%d][%d] not found" % (i,j,temp[0],temp[1]))
+    return 0
+    
 
 def Sval(i,j,k,l):
     for row in range(S.shape[0]):
         if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
             return S[row][4]
     print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
-                    
+    return 0
+
+      
+def Rval(i,j):
+    for row in range(R.shape[0]):
+        if R[row][0]==i and R[row][1]==j:
+            return R[row][2]
+
+        
+def Tval(i):
+    for row in range(T.shape[0]):
+        if T[row][0]==i:
+            return T[row][1]
+
 
 """
 These tensors will be calculated by integrals elsewhere before being used; for the test case,
@@ -111,7 +136,7 @@ def R(i,j,d):
                 +(w(i,d)**2)*(w(j,d)**2)*(Xval(i,j,j,i) - Xval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
                 + (w(i,d)**2)*(w(j,d)**2)*(W00(j,j,i,i,d) + W00(i,i,j,j,d)) \
                 + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
-                - (w(j,d)**2)*(A(i,i,d) + (w(i)**2)*V(i,i,d)))
+                - (w(j,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
    
 """
 Define initial values of a and b based on a0 = 1.0, a1 = 0.1 and the first two terms
@@ -133,13 +158,8 @@ def ains(i):
     else:
         print("Not an initial condition for a")
     
-def b1(a0,a1,d):
-    const = 0
-    for i in range(2):
-        for j in range(i+1):
-            for k in range(j+1):
-                const = const + Sval(1,i,j,k)*ains(i)*ains(j)*ains(k)
-    return -1.0*(4.0*T(1,d)*ains(1)**3 + 4*R(1,0)*ains(1) + 4.0*const)/(2.0*w(1,d)*ains(1))
+def b1(d):
+    return -1.0*(4.0*Tval(1)*ains(1)**3 + 4*Rval(1,0)*ains(1) + 4.0*Sval(1,0,0,0)*ains(0)**3)/(2.0*w(1,d)*ains(1))
                 
 
     
@@ -166,10 +186,11 @@ def b1(a0,a1,d):
 ###################################################################
 ###################################################################
 
-print("X[2][1][0][0] =", Xval(1,2,0,0))
-print("Y[1][2][0][2] =", Yval(1,2,0,2))
-print("S[0][0][1][0] =", Sval(0,0,1,0))
-print("T[0] =", T(0,3))
+print("X[1][0][1][0] =", Xval(1,0,1,0))
+print("Y[1][0][0][1] =", Yval(1,0,0,1))
+print("S[0][0][1][1] =", Sval(0,0,1,1))
+#print("T[1] =", T(1,3))
+#print("b1 =", b1(3))
 
 ###################################################################
 ###################################################################
