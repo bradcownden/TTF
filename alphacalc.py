@@ -66,7 +66,7 @@ def Xval(i,j,k,l):
     for row in range(X.shape[0]):
         if X[row][0]==i and X[row][1]==temp[0] and X[row][2]==temp[1] and X[row][3]==temp[2]:
             return X[row][4] 
-    print("X[%d][%d][%d][%d] not found" % (i,j,k,l))
+    print("X[%d][%d][%d][%d] not found, returning 0" % (i,j,k,l))
     return 0
     
 
@@ -75,14 +75,17 @@ def Yval(i,j,k,l):
     for row in range(Y.shape[0]):
         if Y[row][0]==i and Y[row][1]==j and Y[row][2]==temp[0] and Y[row][3]==temp[1]:
             return Y[row][4]
-    print("Y[%d][%d][%d][%d] not found" % (i,j,temp[0],temp[1]))
+    print("Y[%d][%d][%d][%d] not found, returning 0" % (i,j,temp[0],temp[1]))
     return 0
     
 
 def Sval(i,j,k,l):
     for row in range(S.shape[0]):
         if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
-            return S[row][4]
+            if str(S[row][4]) == "nan":
+                return 0
+            else:
+                return S[row][4]
     print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
     return 0
 
@@ -90,7 +93,10 @@ def Sval(i,j,k,l):
 def Rval(i,j):
     for row in range(R.shape[0]):
         if R[row][0]==i and R[row][1]==j:
-            return R[row][2]
+            if str(R[row][2]) == "nan":
+                return 0
+            else:
+                return S[row][2]
 
         
 def Tval(i):
@@ -125,18 +131,18 @@ def A(i,j,d):
 def V(i,j,d):
     return quad(lambda x: (ep(i,d)(x))*(ep(j,d)(x))*math.sin(x)*math.cos(x),0,math.pi/2.)[0]
     
-def T(i,d):
-    return ((w(i,d)**2)*(Xval(i,i,i,i))/2. + 3*(Yval(i,i,i,i))/2. + 2*(w(i,d)**4)*W00(i,i,i,i,d) + 2*(w(i,d)**2)*W10(i,i,i,i,d) \
-    - (w(i,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
+#def T(i,d):
+#    return ((w(i,d)**2)*(Xval(i,i,i,i))/2. + 3*(Yval(i,i,i,i))/2. + 2*(w(i,d)**4)*W00(i,i,i,i,d) + 2*(w(i,d)**2)*W10(i,i,i,i,d) \
+#    - (w(i,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
     
-def R(i,j,d):
-    return (((w(i,d)**2 + w(j,d)**2)/(w(j,d)**2 - w(i,d)**2))*((w(j,d)**2)*Xval(i,j,j,i) - (w(i,d)**2)*Xval(j,i,i,j))/2. \
-                + 2*((w(j,d)**2)*Yval(i,j,i,j) - (w(i,d)**2)*Yval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
-                + (Yval(i,i,j,j) + Yval(j,j,i,i))/2. \
-                +(w(i,d)**2)*(w(j,d)**2)*(Xval(i,j,j,i) - Xval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
-                + (w(i,d)**2)*(w(j,d)**2)*(W00(j,j,i,i,d) + W00(i,i,j,j,d)) \
-                + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
-                - (w(j,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
+#def R(i,j,d):
+#    return (((w(i,d)**2 + w(j,d)**2)/(w(j,d)**2 - w(i,d)**2))*((w(j,d)**2)*Xval(i,j,j,i) - (w(i,d)**2)*Xval(j,i,i,j))/2. \
+#                + 2*((w(j,d)**2)*Yval(i,j,i,j) - (w(i,d)**2)*Yval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
+#                + (Yval(i,i,j,j) + Yval(j,j,i,i))/2. \
+#                +(w(i,d)**2)*(w(j,d)**2)*(Xval(i,j,j,i) - Xval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
+#                + (w(i,d)**2)*(w(j,d)**2)*(W00(j,j,i,i,d) + W00(i,i,j,j,d)) \
+#                + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
+#                - (w(j,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
    
 """
 Define initial values of a and b based on a0 = 1.0, a1 = 0.1 and the first two terms
@@ -188,9 +194,10 @@ def b1(d):
 
 print("X[1][0][1][0] =", Xval(1,0,1,0))
 print("Y[1][0][0][1] =", Yval(1,0,0,1))
-print("S[0][0][1][1] =", Sval(0,0,1,1))
-#print("T[1] =", T(1,3))
-#print("b1 =", b1(3))
+print("S[1][0][0][0] =", Sval(1,0,0,0))
+print("T[1] =", Tval(2))
+print("R[1][1] =", Rval(1,1))
+print("b1 =", b1(3))
 
 ###################################################################
 ###################################################################
