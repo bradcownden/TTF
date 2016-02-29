@@ -19,6 +19,7 @@ from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
 from scipy.optimize import newton_krylov
+from scipy.sparse.linalg import *
 
 ###################################################################
 ###################################################################
@@ -96,7 +97,7 @@ def Rval(i,j):
             if str(R[row][2]) == "nan":
                 return 0
             else:
-                return S[row][2]
+                return R[row][2]
 
         
 def Tval(i):
@@ -149,37 +150,57 @@ Define initial values of a and b based on a0 = 1.0, a1 = 0.1 and the first two t
 of the QP mode equation
 """
 
-# These two values are the only inputs
+# Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
 a1 = 0.1
-          
-def b0(d):
-    return -2.0*T(0,d)/w(0,d)
+N = 3
+d=3
 
-def ains(i):
+# Initialize alpha
+alpha = np.ones(N)        
+alpha[0] = a0
+alpha[1] = a1        
+    
+
+ 
+"""    
+Functions for solving TTF coefficients
+"""
+
+def b(i,d):
     if i == 0:
-        return a0
+        return -2.*Tval(0)/w(0,d)
     if i == 1:
-        return a1
+        return -1.0*(4.0*Tval(1)*alpha[1]**3 + 4*Rval(1,0)*alpha[1] + 4.0*Sval(1,0,0,0)*alpha[0]**3)/(2.0*w(1,d)*alpha[1])
     else:
-        print("Not an initial condition for a")
-    
-def b1(d):
-    return -1.0*(4.0*Tval(1)*ains(1)**3 + 4*Rval(1,0)*ains(1) + 4.0*Sval(1,0,0,0)*ains(0)**3)/(2.0*w(1,d)*ains(1))
-                
+        return b(0,d)+(b(1,d)-b(0,d))*i*1.0
 
-    
-    
+def f(x):
+    return 4.0*Tval(2)*x**3 + 4.0*(Rval(2,0)*x + Rval(2,1)*x*(0.1)**2) + 4.*(Sval(2,0,0,0) + 0.1*(Sval(2,0,0,1) \
+    + Sval(2,0,1,0) + Sval(2,1,0,0)) + (0.1**2)*(Sval(2,0,1,1) + Sval(2,1,0,1) + Sval(2,1,1,0)) \
+    + x*(Sval(2,0,0,2)+Sval(2,0,2,0) + Sval(2,2,0,0))) + 2.*w(2,3)*b(2,3)*x
 
 
-    
+# Use the QP equation (14) from arXiv:1507.08261
+def F(alpha):
+    F = np.zeros(N)
+    for i in range(N):
+        for j in range(i+1):
+            for k in range(j+1):
+                for l in range(k+1):
+                    if j+k+l <= i:
+                        F[i]= 4.*Tval(i)*alpha[i]**3 + 4.*Rval(i,j)*alpha[j]*alpha[i]**2 + 4.*Sval(i,j,k,l)*alpha[j]*alpha[k]*alpha[l] \
+                        + 2.*w(i,d)*b(i,d)*alpha[i]
+                    else:
+                        F[i]= 4.*Tval(i)*alpha[i]**3 + 4.*Rval(i,j)*alpha[j]*alpha[i]**2 + 2.*w(i,d)*b(i,d)*alpha[i]
+    return F
 
 
+"""
+Solve for TTF coefficients
+"""
 
-
-
-
-
+print(newton_krylov(F,alpha,method='minres',verbose="True"))
 
 
 
@@ -196,8 +217,9 @@ print("X[1][0][1][0] =", Xval(1,0,1,0))
 print("Y[1][0][0][1] =", Yval(1,0,0,1))
 print("S[1][0][0][0] =", Sval(1,0,0,0))
 print("T[1] =", Tval(2))
-print("R[1][1] =", Rval(1,1))
-print("b1 =", b1(3))
+print("R[1][0] =", Rval(1,1))
+print("b1 =", b(1,3))
+print("b0 =", b(0,3))
 
 ###################################################################
 ###################################################################
