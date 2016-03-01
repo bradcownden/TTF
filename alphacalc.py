@@ -19,7 +19,7 @@ from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
 from scipy.optimize import newton_krylov
-from scipy.sparse.linalg import *
+from scipy.optimize import newton
 
 ###################################################################
 ###################################################################
@@ -154,10 +154,10 @@ of the QP mode equation
 a0 = 1.0
 a1 = 0.1
 N = 3
-d=3
+d = 3
 
 # Initialize alpha
-alpha = np.ones(N)        
+alpha = np.zeros(N)        
 alpha[0] = a0
 alpha[1] = a1        
     
@@ -185,14 +185,13 @@ def f(x):
 def F(alpha):
     F = np.zeros(N)
     for i in range(N):
-        for j in range(i+1):
-            for k in range(j+1):
-                for l in range(k+1):
-                    if j+k+l <= i:
-                        F[i]= 4.*Tval(i)*alpha[i]**3 + 4.*Rval(i,j)*alpha[j]*alpha[i]**2 + 4.*Sval(i,j,k,l)*alpha[j]*alpha[k]*alpha[l] \
-                        + 2.*w(i,d)*b(i,d)*alpha[i]
+        for j in range(N):
+            for k in range(N):
+                    if j+k-i<N and i<=j+k:
+                        F[i]= 2.*Tval(i)*alpha[i]**3 + 2.*Rval(i,j)*alpha[j]*(alpha[i]**2) + 2.*Sval(j,k,j+k-i,i)*alpha[j]*alpha[k]*np.conj(alpha[j+k-i]) \
+                        + 1.*w(i,d)*b(i,d)*alpha[i]
                     else:
-                        F[i]= 4.*Tval(i)*alpha[i]**3 + 4.*Rval(i,j)*alpha[j]*alpha[i]**2 + 2.*w(i,d)*b(i,d)*alpha[i]
+                        F[i]= 2.*Tval(i)*alpha[i]**3 + 2.*Rval(i,j)*alpha[j]*(alpha[i]**2) + 1.*w(i,d)*b(i,d)*alpha[i]
     return F
 
 
@@ -200,7 +199,9 @@ def F(alpha):
 Solve for TTF coefficients
 """
 
-print(newton_krylov(F,alpha,method='minres',verbose="True"))
+print("Newton-Krylov method alpha_2 =", "{:.12e}".format(newton_krylov(F,alpha,f_tol=1e-4)[2]))
+
+
 
 
 
@@ -213,6 +214,7 @@ print(newton_krylov(F,alpha,method='minres',verbose="True"))
 ###################################################################
 ###################################################################
 
+"""
 print("X[1][0][1][0] =", Xval(1,0,1,0))
 print("Y[1][0][0][1] =", Yval(1,0,0,1))
 print("S[1][0][0][0] =", Sval(1,0,0,0))
@@ -220,6 +222,7 @@ print("T[1] =", Tval(2))
 print("R[1][0] =", Rval(1,1))
 print("b1 =", b(1,3))
 print("b0 =", b(0,3))
+"""
 
 ###################################################################
 ###################################################################
