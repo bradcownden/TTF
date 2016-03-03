@@ -217,10 +217,12 @@ Solve for TTF coefficients
 
 #print("Up to N = 2, F =",F(alpha))
 
-print("S[0][0][0][0] =",Sval(0,0,0,0))
-print("S[1][0][1][0] =",Sval(1,0,1,0))
+print("S[1][0][0][1] =",Sval(1,0,0,1))
 print("S[0][1][0][1] =",Sval(0,1,0,1))
-print("R[0][1] =",Rval(0,1))
+print("S[1][1][1][1] =",Sval(1,1,1,1))
+print("R[1][0] =",Rval(1,0))
+print("b1 =", b(1,3))
+print("T[1] =", Tval(1))
 
 
 F(alpha)
