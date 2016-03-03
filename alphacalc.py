@@ -153,13 +153,18 @@ of the QP mode equation
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
 a1 = 0.1
-N = 3
+N = 2
 d = 3
 
 # Initialize alpha
 alpha = np.zeros(N)        
 alpha[0] = a0
-alpha[1] = a1        
+alpha[1] = a1
+def aval(i):
+    if i < 0:
+        return 0
+    else:
+        return alpha[i]
     
 
  
@@ -171,7 +176,7 @@ def b(i,d):
     if i == 0:
         return -2.*Tval(0)/w(0,d)
     if i == 1:
-        return -1.0*(4.0*Tval(1)*alpha[1]**3 + 4*Rval(1,0)*alpha[1] + 4.0*Sval(1,0,0,0)*alpha[0]**3)/(2.0*w(1,d)*alpha[1])
+        return -1.0*(4.0*Tval(1)*aval(1)**3 + 4*Rval(1,0)*aval(1) + 4.0*Sval(1,0,0,0)*aval(0)**3)/(2.0*w(1,d)*aval(1))
     else:
         return b(0,d)+(b(1,d)-b(0,d))*i*1.0
 
@@ -185,13 +190,22 @@ def f(x):
 def F(alpha):
     F = np.zeros(N)
     for i in range(N):
+        s = 0
+        r = 0
+        F[i] = 0
         for j in range(N):
             for k in range(N):
-                    if j+k-i<N and i<=j+k:
-                        F[i]= 2.*Tval(i)*alpha[i]**3 + 2.*Rval(i,j)*alpha[j]*(alpha[i]**2) + 2.*Sval(j,k,j+k-i,i)*alpha[j]*alpha[k]*np.conj(alpha[j+k-i]) \
-                        + 1.*w(i,d)*b(i,d)*alpha[i]
-                    else:
-                        F[i]= 2.*Tval(i)*alpha[i]**3 + 2.*Rval(i,j)*alpha[j]*(alpha[i]**2) + 1.*w(i,d)*b(i,d)*alpha[i]
+                    if j+k-i<N:
+                        print("In S sum")
+                        print("[i,j,k] = [%d,%d,%d]" % (i,j,k))
+                        s = s + 2.*Sval(j,k,j+k-i,i)*aval(j)*aval(k)*np.conj(aval(j+k-i))
+                        print("s =", s)
+            print("In R sum")
+            print("[i,j] = [%d,%d]" % (i,j))
+            r = r + 2.*Rval(i,j)*aval(i)*(aval(j)**2)
+            print("r =", r)
+        F[i]= 2.*Tval(i)*aval(i)**3 + r + 1.*w(i,d)*b(i,d)*aval(i) + s
+        print("F[%d] =" %i, F[i])
     return F
 
 
@@ -199,14 +213,17 @@ def F(alpha):
 Solve for TTF coefficients
 """
 
-print("Newton-Krylov method alpha_2 =", "{:.12e}".format(newton_krylov(F,alpha,f_tol=1e-4)[2]))
+#print("Newton-Krylov method alpha_2 =", "{:.12e}".format(newton_krylov(F,alpha,f_tol=1e-4)[2]))
+
+#print("Up to N = 2, F =",F(alpha))
+
+print("S[0][0][0][0] =",Sval(0,0,0,0))
+print("S[1][0][1][0] =",Sval(1,0,1,0))
+print("S[0][1][0][1] =",Sval(0,1,0,1))
+print("R[0][1] =",Rval(0,1))
 
 
-
-
-
-
-
+F(alpha)
 
 
 
