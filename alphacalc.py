@@ -87,7 +87,7 @@ def Sval(i,j,k,l):
                 return 0
             else:
                 return S[row][4]
-    print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
+    #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
     return 0
 
       
@@ -152,86 +152,157 @@ of the QP mode equation
 
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
-a1 = 0.1
-N = 2
+a1 = 0.2
+N = 11
 d = 3
 
-# Initialize alpha
-alpha = np.zeros(N)        
-alpha[0] = a0
-alpha[1] = a1
-def aval(i):
-    if i < 0:
-        return 0
-    else:
-        return alpha[i]
-    
 
  
 """    
 Functions for solving TTF coefficients
 """
+            
 
-def b(i,d):
+
+def b(i,d,alpha):
+    # beta_0 for any N
     if i == 0:
-        return -2.*Tval(0)/w(0,d)
+        s = 0; r = 0
+        for k in range(N):
+            for l in range(N):
+                if k+l<N:
+                    if k == 0:
+                        if l == 0:
+                            s = s + 2.*Sval(l,k,k+l,0)*a0**3
+                        if l == 1:
+                            s = s + 2.*Sval(l,k,k+l,0)*a0*a1**2
+                        if l > 1:
+                            s = s + 2.*Sval(l,k,k+l,0)*a0*alpha[l]*alpha[k+l]
+                    if k == 1:
+                        if l == 0:
+                            s = s + 2.*Sval(l,k,k+l,0)*a0*a1**2
+                        if l == 1:
+                            s = s + 2.*Sval(l,k,k+l,0)*alpha[k+l]*a1**2
+                        if l > 1:
+                            s = s + 2.*Sval(l,k,k+l,0)*a1*alpha[l]*alpha[k+l]
+                    if k > 1:
+                        if l == 0:
+                            s = s + 2.*Sval(l,k,k+l,0)*a0*alpha[k]*alpha[k+l]
+                        if l == 1:
+                            s = s + 2.*Sval(l,k,k+l,0)*a1*alpha[k]*alpha[k+l]
+                        if l > 1:
+                            s = s + 2.*Sval(l,k,k+l,0)*alpha[l]*alpha[k]*alpha[k+l]                
+            if k == 0:
+                r = r + 2.*Rval(0,k)*a0**3
+            if k == 1:
+                r = r + 2.*Rval(0,k)*a0*a1**2
+            else:
+                r = r + 2.*Rval(0,k)*a0*alpha[k]
+        return (-2.*Tval(0)*a0**3 -r -s)/(w(0,d)*a0)
+    
+    # beta_1 for any N
     if i == 1:
-        return -1.0*(4.0*Tval(1)*aval(1)**3 + 4*Rval(1,0)*aval(1) + 4.0*Sval(1,0,0,0)*aval(0)**3)/(2.0*w(1,d)*aval(1))
-    else:
-        return b(0,d)+(b(1,d)-b(0,d))*i*1.0
+        s = 0; r = 0
+        for k in range(N):
+            for l in range(N):
+                if k+l<N:
+                    if k == 0:
+                        if l == 0:
+                            s = s + 0.
+                        if l == 1:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*a0**2
+                        if l > 1:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a0*alpha[l]*alpha[k+l-1]
+                    if k == 1:
+                        if l == 0:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*a0**2
+                        if l == 1:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a1**3
+                        if l > 1:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*alpha[l]*alpha[k+l-1]
+                    if k > 1:
+                        if l == 0:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a0*alpha[k]*alpha[k+l-1]
+                        if l == 1:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*alpha[k]*alpha[k+l-1]
+                        if l > 1:
+                            s = s + 2.*Sval(l,k,k+l-1,1)*alpha[l]*alpha[k]*alpha[k+l-1]                
+            if k == 0:
+                r = r + 2.*Rval(1,k)*a1*a0**2
+            if k == 1:
+                r = r + 2.*Rval(1,k)*a1**3
+            else:
+                r = r + 2.*Rval(1,k)*a0*alpha[k]
+        return (-2.*Tval(1)*a1**3 -r -s)/(w(1,d)*a1)
 
-def f(x):
-    return 4.0*Tval(2)*x**3 + 4.0*(Rval(2,0)*x + Rval(2,1)*x*(0.1)**2) + 4.*(Sval(2,0,0,0) + 0.1*(Sval(2,0,0,1) \
-    + Sval(2,0,1,0) + Sval(2,1,0,0)) + (0.1**2)*(Sval(2,0,1,1) + Sval(2,1,0,1) + Sval(2,1,1,0)) \
-    + x*(Sval(2,0,0,2)+Sval(2,0,2,0) + Sval(2,2,0,0))) + 2.*w(2,3)*b(2,3)*x
+    # beta_i for i !=0,1    
+    if i > 1:
+        return b(0,d,alpha)+(b(1,d,alpha)-b(0,d,alpha))*i*1.0
 
 
 # Use the QP equation (14) from arXiv:1507.08261
 def F(alpha):
-    F = np.zeros(N)
-    for i in range(N):
+    F = np.zeros_like(alpha)
+    for i in range(2,N):
         s = 0
         r = 0
         F[i] = 0
         for j in range(N):
             for k in range(N):
                     if j+k-i<N:
-                        print("In S sum")
-                        print("[i,j,k] = [%d,%d,%d]" % (i,j,k))
-                        s = s + 2.*Sval(j,k,j+k-i,i)*aval(j)*aval(k)*np.conj(aval(j+k-i))
-                        print("s =", s)
-            print("In R sum")
-            print("[i,j] = [%d,%d]" % (i,j))
-            r = r + 2.*Rval(i,j)*aval(i)*(aval(j)**2)
-            print("r =", r)
-        F[i]= 2.*Tval(i)*aval(i)**3 + r + 1.*w(i,d)*b(i,d)*aval(i) + s
-        print("F[%d] =" %i, F[i])
+                        #print("In S sum")
+                        #print("[i,j,k] = [%d,%d,%d]" % (i,j,k))
+                        s = s + 2.*Sval(j,k,j+k-i,i)*alpha[j]*alpha[k]*alpha[j+k-i]
+                        #print("s =", s)
+            #print("In R sum")
+            #print("[i,j] = [%d,%d]" % (i,j))
+            r = r + 2.*Rval(i,j)*alpha[i]*(alpha[j]**2)
+            #print("r =", r)
+        #print("F[%d] =" %i,F[i])
+        F[i]= 2.*Tval(i)*(alpha[i]**2)*alpha[i] + r + 1.*w(i,d)*b(i,d,alpha)*alpha[i] + s
+        #print("F[%d] =" %i, F[i])
     return F
+
+# Compute the energy per mode using (5) from arXiv:1507.08261
+def energy(x):
+    E = np.zeros_like(x)
+    E[0] = 4*w(0,d)**2*a0**2
+    E[1] = 4*w(1,d)**2*a1**2
+    for i in range(2,len(x)):
+        E[i] = 4.*w(i,d)**2*x[i]**2
+    return E
+
+
+###################################################################
+###################################################################
 
 
 """
 Solve for TTF coefficients
 """
-
-#print("Newton-Krylov method alpha_2 =", "{:.12e}".format(newton_krylov(F,alpha,f_tol=1e-4)[2]))
-
-#print("Up to N = 2, F =",F(alpha))
-
-print("S[1][0][0][1] =",Sval(1,0,0,1))
-print("S[0][1][0][1] =",Sval(0,1,0,1))
-print("S[1][1][1][1] =",Sval(1,1,1,1))
-print("R[1][0] =",Rval(1,0))
-print("b1 =", b(1,3))
-print("T[1] =", Tval(1))
+ainits = np.ones(N)
+ainits[0] = a0
+ainits[1] = a1
+sol = newton_krylov(F,ainits,verbose="True")
+print(sol)
+print(energy(sol))
 
 
-F(alpha)
-
-
-
+with open("AdS4QPa1_02.dat","w") as s:
+    for i in range(len(sol)):
+        s.write("%d %.14e \n" % (i,sol[i]))
+    print("Wrote QP modes to %s" % s.name)
+                        
+with open("AdS4QPa1_02E.dat","w") as f:
+    for i in range(len(energy(sol))):
+        f.write("%d %.14e \n" % (i,energy(sol)[i]))
+    print("Wrote QP mode energies to %s" % f.name)
+    
 
 ###################################################################
 ###################################################################
+
+
 
 """
 print("X[1][0][1][0] =", Xval(1,0,1,0))
@@ -243,5 +314,3 @@ print("b1 =", b(1,3))
 print("b0 =", b(0,3))
 """
 
-###################################################################
-###################################################################
