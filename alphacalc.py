@@ -153,7 +153,7 @@ of the QP mode equation
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
 a1 = 0.2
-N = 11
+N = 3
 d = 3
 
 
@@ -161,107 +161,34 @@ d = 3
 """    
 Functions for solving TTF coefficients
 """
-            
 
-
-def b(i,d,alpha):
-    # beta_0 for any N
-    if i == 0:
-        s = 0; r = 0
-        for k in range(N):
-            for l in range(N):
-                if k+l<N:
-                    if k == 0:
-                        if l == 0:
-                            s = s + 2.*Sval(l,k,k+l,0)*a0**3
-                        if l == 1:
-                            s = s + 2.*Sval(l,k,k+l,0)*a0*a1**2
-                        if l > 1:
-                            s = s + 2.*Sval(l,k,k+l,0)*a0*alpha[l]*alpha[k+l]
-                    if k == 1:
-                        if l == 0:
-                            s = s + 2.*Sval(l,k,k+l,0)*a0*a1**2
-                        if l == 1:
-                            s = s + 2.*Sval(l,k,k+l,0)*alpha[k+l]*a1**2
-                        if l > 1:
-                            s = s + 2.*Sval(l,k,k+l,0)*a1*alpha[l]*alpha[k+l]
-                    if k > 1:
-                        if l == 0:
-                            s = s + 2.*Sval(l,k,k+l,0)*a0*alpha[k]*alpha[k+l]
-                        if l == 1:
-                            s = s + 2.*Sval(l,k,k+l,0)*a1*alpha[k]*alpha[k+l]
-                        if l > 1:
-                            s = s + 2.*Sval(l,k,k+l,0)*alpha[l]*alpha[k]*alpha[k+l]                
-            if k == 0:
-                r = r + 2.*Rval(0,k)*a0**3
-            if k == 1:
-                r = r + 2.*Rval(0,k)*a0*a1**2
-            else:
-                r = r + 2.*Rval(0,k)*a0*alpha[k]
-        return (-2.*Tval(0)*a0**3 -r -s)/(w(0,d)*a0)
-    
-    # beta_1 for any N
-    if i == 1:
-        s = 0; r = 0
-        for k in range(N):
-            for l in range(N):
-                if k+l<N:
-                    if k == 0:
-                        if l == 0:
-                            s = s + 0.
-                        if l == 1:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*a0**2
-                        if l > 1:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a0*alpha[l]*alpha[k+l-1]
-                    if k == 1:
-                        if l == 0:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*a0**2
-                        if l == 1:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a1**3
-                        if l > 1:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*alpha[l]*alpha[k+l-1]
-                    if k > 1:
-                        if l == 0:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a0*alpha[k]*alpha[k+l-1]
-                        if l == 1:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*a1*alpha[k]*alpha[k+l-1]
-                        if l > 1:
-                            s = s + 2.*Sval(l,k,k+l-1,1)*alpha[l]*alpha[k]*alpha[k+l-1]                
-            if k == 0:
-                r = r + 2.*Rval(1,k)*a1*a0**2
-            if k == 1:
-                r = r + 2.*Rval(1,k)*a1**3
-            else:
-                r = r + 2.*Rval(1,k)*a0*alpha[k]
-        return (-2.*Tval(1)*a1**3 -r -s)/(w(1,d)*a1)
-
-    # beta_i for i !=0,1    
-    if i > 1:
-        return b(0,d,alpha)+(b(1,d,alpha)-b(0,d,alpha))*i*1.0
-
+# Function that returns the input values a0, a1 when i=0,1 and returns the variable
+# being optimized when i>1
+def alpha(i,x):
+    if i==0:
+        return a0
+    if i==1:
+        return a1
+    if i>1:
+        return x[i]
+    if i<0:
+        #print("Index error in alpha, called for i=%d" % i)
+        return 0
 
 # Use the QP equation (14) from arXiv:1507.08261
-def F(alpha):
-    F = np.zeros_like(alpha)
-    for i in range(2,N):
-        s = 0
-        r = 0
-        F[i] = 0
+def system(x):
+    F = np.zeros_like(x)
+    for i in range(N):
+        s = 0; r = 0
         for j in range(N):
             for k in range(N):
-                    if j+k-i<N:
-                        #print("In S sum")
-                        #print("[i,j,k] = [%d,%d,%d]" % (i,j,k))
-                        s = s + 2.*Sval(j,k,j+k-i,i)*alpha[j]*alpha[k]*alpha[j+k-i]
-                        #print("s =", s)
-            #print("In R sum")
-            #print("[i,j] = [%d,%d]" % (i,j))
-            r = r + 2.*Rval(i,j)*alpha[i]*(alpha[j]**2)
-            #print("r =", r)
-        #print("F[%d] =" %i,F[i])
-        F[i]= 2.*Tval(i)*(alpha[i]**2)*alpha[i] + r + 1.*w(i,d)*b(i,d,alpha)*alpha[i] + s
-        #print("F[%d] =" %i, F[i])
+                if j+k-i<N:
+                    s = s +2.*Sval(j,k,j+k-i,i)*alpha(j,x)*alpha(k,x)*alpha(j+k-i,x) 
+            r = r + 2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2
+        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+i*(x[1]-x[0]))*alpha(i,x) + r + s
     return F
+    
+
 
 # Compute the energy per mode using (5) from arXiv:1507.08261
 def energy(x):
@@ -281,13 +208,11 @@ def energy(x):
 Solve for TTF coefficients
 """
 ainits = np.ones(N)
-ainits[0] = a0
-ainits[1] = a1
-sol = newton_krylov(F,ainits,verbose="True")
-print(sol)
-print(energy(sol))
+sol = newton_krylov(system,ainits)
+print("Loop of QP equation [beta_0, beta_1, alpha_2] = [%.10e, %.10e, %.10e]" % (sol[0],sol[1],sol[2]))
+#print(energy(sol))
 
-
+"""
 with open("AdS4QPa1_02.dat","w") as s:
     for i in range(len(sol)):
         s.write("%d %.14e \n" % (i,sol[i]))
@@ -297,20 +222,49 @@ with open("AdS4QPa1_02E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
+"""    
+
+###################################################################
+###################################################################
+
+
+
+"""
+Test case of N=3
+"""
+
+def f(x):
+    f = np.zeros(3)    
     
+    f[0] = 2.*Tval(0) + 2.*(Rval(0,1)*(0.2**2) + Rval(0,2)*x[2]**2) + w(0,d)*x[0] \
+    + 2.*(Sval(0,1,1,0)*(0.2**2) + Sval(0,2,2,0)*x[2]**2 + Sval(1,0,1,0)*(0.2**2) \
+    + Sval(1,1,2,0)*x[2]*(0.2**2) + Sval(2,0,2,0)*x[2]**2)
+    
+    f[1] = 2.*Tval(1)*(0.2**3) + 2.*(Rval(1,0)*0.2 + Rval(1,2)*0.2*x[2]**2) \
+    + w(1,d)*x[1]*0.2 + 2.*(Sval(0,1,0,1)*0.2 + Sval(0,2,1,1)*0.2*x[2] + Sval(1,0,0,1)*0.2 \
+    + Sval(1,1,1,1)*(0.2**3) + Sval(1,2,2,1)*(0.2)*x[2]**2 + Sval(2,0,1,1)*0.2*x[2] \
+    + Sval(2,1,2,1)*0.2*x[2]**2)
+    
+    f[2] = 2.*Tval(2)*x[2]**3 + 2.*(Rval(2,0) + Rval(2,1)*0.2**2)*x[2] \
+    + w(2,d)*(x[0] + 2.*(x[1]-x[0]))*x[2] + 2.*(Sval(0,2,0,2)*x[2] + Sval(1,1,0,2)*(0.2**2) \
+    + Sval(1,2,1,2)*(0.2**2)*x[2] + Sval(2,0,0,2)*x[2] + Sval(2,1,1,2)*(0.2**2)*x[2] \
+    + Sval(2,2,2,2)*(x[2]**3))
+    
+    return f
+    
+x0 = np.ones(3)
+sol = newton_krylov(f,x0)
+print("Test case with explicit formulas [beta_0, beta_1, alpha_2] = [%.10e, %.10e, %.10e]" % (sol[0],sol[1],sol[2]))
 
-###################################################################
-###################################################################
 
 
 
-"""
-print("X[1][0][1][0] =", Xval(1,0,1,0))
-print("Y[1][0][0][1] =", Yval(1,0,0,1))
-print("S[1][0][0][0] =", Sval(1,0,0,0))
-print("T[1] =", Tval(2))
-print("R[1][0] =", Rval(1,1))
-print("b1 =", b(1,3))
-print("b0 =", b(0,3))
-"""
+
+
+
+
+
+
+
+
 
