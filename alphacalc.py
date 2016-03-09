@@ -19,7 +19,9 @@ from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
 from scipy.optimize import newton_krylov
-from scipy.optimize import newton
+import pp
+import time, sys
+
 
 ###################################################################
 ###################################################################
@@ -145,21 +147,23 @@ def V(i,j,d):
 #                + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
 #                - (w(j,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
    
+###################################################################
+###################################################################
+
 """
-Define initial values of a and b based on a0 = 1.0, a1 = 0.1 and the first two terms
-of the QP mode equation
+Inputs for the QP mode solver
 """
 
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
 a1 = 0.2
-N = 3
+N = 10
 d = 3
 
 
  
 """    
-Functions for solving TTF coefficients
+Functions for solving for QP coefficients
 """
 
 # Function that returns the input values a0, a1 when i=0,1 and returns the variable
@@ -175,6 +179,8 @@ def alpha(i,x):
         #print("Index error in alpha, called for i=%d" % i)
         return 0
 
+
+
 # Use the QP equation (14) from arXiv:1507.08261
 def system(x):
     F = np.zeros_like(x)
@@ -185,7 +191,7 @@ def system(x):
                 if j+k-i<N:
                     s = s +2.*Sval(j,k,j+k-i,i)*alpha(j,x)*alpha(k,x)*alpha(j+k-i,x) 
             r = r + 2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2
-        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+i*(x[1]-x[0]))*alpha(i,x) + r + s
+        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+float(i)*(x[1]-x[0]))*alpha(i,x) + r + s
     return F
     
 
@@ -205,28 +211,35 @@ def energy(x):
 
 
 """
-Solve for TTF coefficients
+Solve for QP coefficients
 """
+
+t0 = time.process_time()
 ainits = np.ones(N)
 sol = newton_krylov(system,ainits)
-print("Loop of QP equation [beta_0, beta_1, alpha_2] = [%.10e, %.10e, %.10e]" % (sol[0],sol[1],sol[2]))
+print(sol)
+t1=time.process_time()
+print("Calculation time =",t1-t0,"seconds")
 #print(energy(sol))
 
-"""
 with open("AdS4QPa1_02.dat","w") as s:
     for i in range(len(sol)):
-        s.write("%d %.14e \n" % (i,sol[i]))
+        if i == 0:
+            s.write("%d %.14e \n" % (i,a0))
+        if i == 1:
+            s.write("%d %.14e \n" % (i,a1))
+        else:
+            s.write("%d %.14e \n" % (i,sol[i]))
     print("Wrote QP modes to %s" % s.name)
                         
 with open("AdS4QPa1_02E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
-"""    
+   
 
 ###################################################################
 ###################################################################
-
 
 
 """
@@ -252,9 +265,41 @@ def f(x):
     
     return f
     
-x0 = np.ones(3)
-sol = newton_krylov(f,x0)
-print("Test case with explicit formulas [beta_0, beta_1, alpha_2] = [%.10e, %.10e, %.10e]" % (sol[0],sol[1],sol[2]))
+#x0 = np.ones(3)
+#sol = newton_krylov(f,x0)
+#print("Test case with explicit formulas [beta_0, beta_1, alpha_2] = [%.10e, %.10e, %.10e]" % (sol[0],sol[1],sol[2]))
+
+###################################################################
+###################################################################
+
+"""
+Try to use parallel computing to cover a range of a1 values at once
+"""
+# simple program that distributes 'compute' function' to each node running 'dispynode'
+def compute(n):
+    import time, socket
+    time.sleep(n)
+    host = socket.gethostname()
+    return (host, n)
+"""
+if __name__ == '__main__':
+    import dispy, random
+    cluster = dispy.JobCluster(compute)
+    jobs = []
+    for i in range(10):
+        # schedule execution of 'compute' on a node (running 'dispynode')
+        # with a parameter (random number in this case)
+        job = cluster.submit(random.randint(5,20))
+        job.id = i # optionally associate an ID to job (if needed later)
+        jobs.append(job)
+    # cluster.wait() # wait for all scheduled jobs to finish
+    for job in jobs:
+        host, n = job() # waits for job to finish and returns results
+        print('%s executed job %s at %s with %s' % (host, job.id, job.start_time, n))
+        # other fields of 'job' that may be useful:
+        # print(job.stdout, job.stderr, job.exception, job.ip_addr, job.start_time, job.end_time)
+    cluster.print_status()
+"""
 
 
 
