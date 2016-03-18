@@ -19,8 +19,8 @@ from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
 from scipy.optimize import newton_krylov
-import pp
-import time, sys
+import dispy, time
+
 
 
 ###################################################################
@@ -30,7 +30,7 @@ import time, sys
 Read in values for X,Y,S from recursion relations.
 """
 
-S = np.genfromtxt("d3S_L10.dat")
+#S = np.genfromtxt("d3S_L10.dat")
 X = np.genfromtxt("d3X_L10.dat")
 Y = np.genfromtxt("d3Y_L10.dat")
 
@@ -38,8 +38,46 @@ Y = np.genfromtxt("d3Y_L10.dat")
 Read in T,R from Mathematica output
 """
 
-R = np.genfromtxt("Mathematica_R.dat")
-T = np.genfromtxt("Mathematica_T.dat")
+#R = np.genfromtxt("Mathematica_R.dat")
+#T = np.genfromtxt("Mathematica_T.dat")
+
+"""
+Read in S,R,T values from binary files
+"""
+
+Ttype = np.dtype([('',np.int32),('',np.float)])
+Rtype = np.dtype([('',np.int32),('',np.int32),('',np.float)])
+Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np.float)])
+
+Rbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_R_j100.bin",Rtype)
+Tbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_T_j100.bin",Ttype)
+Sbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_S_j100.bin",Stype)
+
+"""
+Convert binary data to sorted numpy arrays
+"""
+
+T = np.sort(Tbin)
+Tten = np.zeros((1,2))
+for i in range(Tbin.shape[0]):
+    Tten = np.vstack((Tten,np.array([T[i][0],T[i][1]])))
+T = Tten[1:]
+
+    
+R = np.sort(Rbin)
+Rten = np.zeros((1,3))
+for i in range(Rbin.shape[0]):
+    Rten = np.vstack((Rten,np.array([R[i][0],R[i][1],R[i][2]])))
+R = Rten[1:]
+
+
+S = np.sort(Sbin)
+Sten = np.zeros((1,5))
+for i in range(Sbin.shape[0]):
+    Sten = np.vstack((Sten,np.array([S[i][0],S[i][1],S[i][2],S[i][3],S[i][4]])))
+S = Sten[1:]
+
+
 
 
 ###################################################################
@@ -81,27 +119,20 @@ def Yval(i,j,k,l):
     print("Y[%d][%d][%d][%d] not found, returning 0" % (i,j,temp[0],temp[1]))
     return 0
     
-
 def Sval(i,j,k,l):
     for row in range(S.shape[0]):
         if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
-            if str(S[row][4]) == "nan":
-                return 0
-            else:
-                return S[row][4]
+            return S[row][4]
     #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
     return 0
-
       
 def Rval(i,j):
     for row in range(R.shape[0]):
         if R[row][0]==i and R[row][1]==j:
-            if str(R[row][2]) == "nan":
-                return 0
-            else:
-                return R[row][2]
-
-        
+            return R[row][2]
+    print("R[%d,%d] not found" % (i,j))    
+    return 0
+    
 def Tval(i):
     for row in range(T.shape[0]):
         if T[row][0]==i:
@@ -157,7 +188,7 @@ Inputs for the QP mode solver
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
 a1 = 0.2
-N = 10
+N = Tbin.shape[0]
 d = 3
 
 
@@ -195,7 +226,6 @@ def system(x):
     return F
     
 
-
 # Compute the energy per mode using (5) from arXiv:1507.08261
 def energy(x):
     E = np.zeros_like(x)
@@ -220,15 +250,16 @@ sol = newton_krylov(system,ainits)
 print(sol)
 t1=time.process_time()
 print("Calculation time =",t1-t0,"seconds")
-#print(energy(sol))
+print(energy(sol))
 
+"""
 with open("AdS4QPa1_02.dat","w") as s:
     for i in range(len(sol)):
         if i == 0:
             s.write("%d %.14e \n" % (i,a0))
         if i == 1:
             s.write("%d %.14e \n" % (i,a1))
-        else:
+        if i>1:
             s.write("%d %.14e \n" % (i,sol[i]))
     print("Wrote QP modes to %s" % s.name)
                         
@@ -237,6 +268,8 @@ with open("AdS4QPa1_02E.dat","w") as f:
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
    
+"""
+
 
 ###################################################################
 ###################################################################
@@ -276,11 +309,14 @@ def f(x):
 Try to use parallel computing to cover a range of a1 values at once
 """
 # simple program that distributes 'compute' function' to each node running 'dispynode'
-def compute(n):
-    import time, socket
-    time.sleep(n)
-    host = socket.gethostname()
-    return (host, n)
+
+"""
+jobs = ['a02.py','a03.py','a04.py']
+cluster = dispy.JobCluster('a02.py')
+cluster.submit()
+
+"""
+
 """
 if __name__ == '__main__':
     import dispy, random
