@@ -120,11 +120,14 @@ def Yval(i,j,k,l):
     return 0
     
 def Sval(i,j,k,l):
-    for row in range(S.shape[0]):
-        if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
-            return S[row][4]
-    #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
-    return 0
+    if i<0 or j<0 or k<0 or l<0:
+        return 0
+    else:
+        for row in range(S.shape[0]):
+            if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
+                return S[row][4]
+        #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
+        return 0
       
 def Rval(i,j):
     for row in range(R.shape[0]):
@@ -252,8 +255,8 @@ t1=time.process_time()
 print("Calculation time =",t1-t0,"seconds")
 print(energy(sol))
 
-"""
-with open("AdS4QPa1_02.dat","w") as s:
+
+with open("AdS4QP_j100_a02.dat","w") as s:
     for i in range(len(sol)):
         if i == 0:
             s.write("%d %.14e \n" % (i,a0))
@@ -263,12 +266,12 @@ with open("AdS4QPa1_02.dat","w") as s:
             s.write("%d %.14e \n" % (i,sol[i]))
     print("Wrote QP modes to %s" % s.name)
                         
-with open("AdS4QPa1_02E.dat","w") as f:
+with open("AdS4QP_j100_a02E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
    
-"""
+
 
 
 ###################################################################
