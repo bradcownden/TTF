@@ -49,9 +49,9 @@ Ttype = np.dtype([('',np.int32),('',np.float)])
 Rtype = np.dtype([('',np.int32),('',np.int32),('',np.float)])
 Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np.float)])
 
-Rbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_R_j100.bin",Rtype)
-Tbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_T_j100.bin",Ttype)
-Sbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_S_j100.bin",Stype)
+Rbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_R_j50.bin",Rtype)
+Tbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_T_j50.bin",Ttype)
+Sbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_S_j50.bin",Stype)
 
 """
 Convert binary data to sorted numpy arrays
@@ -256,17 +256,14 @@ print("Calculation time =",t1-t0,"seconds")
 print(energy(sol))
 
 
-with open("AdS4QP_j100_a02.dat","w") as s:
-    for i in range(len(sol)):
-        if i == 0:
-            s.write("%d %.14e \n" % (i,a0))
-        if i == 1:
-            s.write("%d %.14e \n" % (i,a1))
-        if i>1:
-            s.write("%d %.14e \n" % (i,sol[i]))
+with open("AdS4QP_j50_a02.dat","w") as s:
+    s.write("%d %.14e \n" % (0,a0))
+    s.write("%d %.14e \n" % (1,a1))
+    for i in range(2,len(sol)):
+        s.write("%d %.14e \n" % (i,sol[i]))
     print("Wrote QP modes to %s" % s.name)
                         
-with open("AdS4QP_j100_a02E.dat","w") as f:
+with open("AdS4QP_j50_a02E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
