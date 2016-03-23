@@ -18,7 +18,7 @@ from sympy import lambdify, jacobi
 from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
-from scipy.optimize import newton_krylov
+from scipy.optimize import newton_krylov, anderson
 import dispy, time
 
 
@@ -30,7 +30,7 @@ import dispy, time
 Read in values for X,Y,S from recursion relations.
 """
 
-#S = np.genfromtxt("d3S_L10.dat")
+S = np.genfromtxt("d3S_L10.dat")
 X = np.genfromtxt("d3X_L10.dat")
 Y = np.genfromtxt("d3Y_L10.dat")
 
@@ -38,25 +38,26 @@ Y = np.genfromtxt("d3Y_L10.dat")
 Read in T,R from Mathematica output
 """
 
-#R = np.genfromtxt("Mathematica_R.dat")
-#T = np.genfromtxt("Mathematica_T.dat")
+R = np.genfromtxt("Mathematica_R.dat")
+T = np.genfromtxt("Mathematica_T.dat")
+
 
 """
 Read in S,R,T values from binary files
 """
-
+"""
 Ttype = np.dtype([('',np.int32),('',np.float)])
 Rtype = np.dtype([('',np.int32),('',np.int32),('',np.float)])
 Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np.float)])
 
-Rbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_R_j50.bin",Rtype)
-Tbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_T_j50.bin",Ttype)
-Sbin = np.fromfile("/Users/bradc/Dropbox/AdS_CFT/MasslessScalarRecursion/AdS4_S_j50.bin",Stype)
-
+Rbin = np.fromfile("AdS4_R_j50.bin",Rtype)
+Tbin = np.fromfile("AdS4_T_j50.bin",Ttype)
+Sbin = np.fromfile("AdS4_S_j50.bin",Stype)
+"""
 """
 Convert binary data to sorted numpy arrays
 """
-
+"""
 T = np.sort(Tbin)
 Tten = np.zeros((1,2))
 for i in range(Tbin.shape[0]):
@@ -76,7 +77,7 @@ Sten = np.zeros((1,5))
 for i in range(Sbin.shape[0]):
     Sten = np.vstack((Sten,np.array([S[i][0],S[i][1],S[i][2],S[i][3],S[i][4]])))
 S = Sten[1:]
-
+"""
 
 
 
@@ -125,15 +126,21 @@ def Sval(i,j,k,l):
     else:
         for row in range(S.shape[0]):
             if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
-                return S[row][4]
+                if np.isnan(S[row][4]) == True:
+                    return 0
+                else:
+                    return S[row][4]
         #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
         return 0
       
 def Rval(i,j):
     for row in range(R.shape[0]):
         if R[row][0]==i and R[row][1]==j:
-            return R[row][2]
-    print("R[%d,%d] not found" % (i,j))    
+            if np.isnan(R[row][2])==True:
+                return 0
+            else:
+                return R[row][2]
+    #   print("R[%d,%d] not found" % (i,j))    
     return 0
     
 def Tval(i):
@@ -191,7 +198,7 @@ Inputs for the QP mode solver
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = 1.0
 a1 = 0.2
-N = Tbin.shape[0]
+N = T.shape[0]
 d = 3
 
 
@@ -248,22 +255,25 @@ Solve for QP coefficients
 """
 
 t0 = time.process_time()
-ainits = np.ones(N)
-sol = newton_krylov(system,ainits)
+ainits = np.zeros(N)
+ainits.fill(1.0e-5)
+ainits[0]=ainits[1]=1.0e3
+sol = newton_krylov(system,ainits,method='minres',verbose=True)
 print(sol)
 t1=time.process_time()
 print("Calculation time =",t1-t0,"seconds")
 print(energy(sol))
+print('\a')
 
 
-with open("AdS4QP_j50_a02.dat","w") as s:
+with open("AdS4QP_j10_a02.dat","w") as s:
     s.write("%d %.14e \n" % (0,a0))
     s.write("%d %.14e \n" % (1,a1))
     for i in range(2,len(sol)):
         s.write("%d %.14e \n" % (i,sol[i]))
     print("Wrote QP modes to %s" % s.name)
                         
-with open("AdS4QP_j50_a02E.dat","w") as f:
+with open("AdS4QP_j10_a02E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
