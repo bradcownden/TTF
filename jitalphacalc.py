@@ -31,22 +31,22 @@ from numba import jit
 Read in values for X,Y,S from recursion relations.
 """
 
-S = np.genfromtxt("d3S_L10.dat")
-X = np.genfromtxt("d3X_L10.dat")
-Y = np.genfromtxt("d3Y_L10.dat")
+#S = np.genfromtxt("d3S_L10.dat",dtype=np.float)
+#X = np.genfromtxt("d3X_L10.dat")
+#Y = np.genfromtxt("d3Y_L10.dat")
 
 """
 Read in T,R from Mathematica output
 """
 
-R = np.genfromtxt("Mathematica_R.dat")
-T = np.genfromtxt("Mathematica_T.dat")
+#R = np.genfromtxt("Mathematica_R.dat",dtype=np.float)
+#T = np.genfromtxt("Mathematica_T.dat",dtype=np.float)
 
 
 """
 Read in S,R,T values from binary files
 """
-"""
+
 Ttype = np.dtype([('',np.int32),('',np.float)])
 Rtype = np.dtype([('',np.int32),('',np.int32),('',np.float)])
 Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np.float)])
@@ -54,33 +54,42 @@ Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np
 Rbin = np.fromfile("AdS4_R_j50.bin",Rtype)
 Tbin = np.fromfile("AdS4_T_j50.bin",Ttype)
 Sbin = np.fromfile("AdS4_S_j50.bin",Stype)
-"""
+
 """
 Convert binary data to sorted numpy arrays
 """
-"""
-T = np.sort(Tbin)
-Tten = np.zeros((1,2))
-for i in range(Tbin.shape[0]):
-    Tten = np.vstack((Tten,np.array([T[i][0],T[i][1]])))
-T = Tten[1:]
-
+@jit(nogil=True)
+def Tsort(Tbin):
+    T = np.sort(Tbin)
+    Tten = np.zeros((1,2),dtype=np.float)
+    for i in range(Tbin.shape[0]):
+        Tten = np.vstack((Tten,np.array([T[i][0],T[i][1]])))
+    return Tten[1:]
     
-R = np.sort(Rbin)
-Rten = np.zeros((1,3))
-for i in range(Rbin.shape[0]):
-    Rten = np.vstack((Rten,np.array([R[i][0],R[i][1],R[i][2]])))
-R = Rten[1:]
+
+@jit(nogil=True)
+def Rsort(Rbin):
+    R = np.sort(Rbin)
+    Rten = np.zeros((1,3),dtype=np.float)
+    for i in range(Rbin.shape[0]):
+        Rten = np.vstack((Rten,np.array([R[i][0],R[i][1],R[i][2]])))
+    return Rten[1:]
 
 
-S = np.sort(Sbin)
-Sten = np.zeros((1,5))
-for i in range(Sbin.shape[0]):
-    Sten = np.vstack((Sten,np.array([S[i][0],S[i][1],S[i][2],S[i][3],S[i][4]])))
-S = Sten[1:]
-"""
+@jit(nogil=True)
+def Ssort(Sbin):
+    S = np.sort(Sbin)
+    Sten = np.zeros((1,5),dtype=np.float)
+    for i in range(Sbin.shape[0]):
+        Sten = np.vstack((Sten,np.array([S[i][0],S[i][1],S[i][2],S[i][3],S[i][4]])))
+    return Sten[1:]
 
 
+T = Tsort(Tbin)
+R = Rsort(Rbin)
+S = Ssort(Sbin)
+
+print("Data read-in complete")
 
 ###################################################################
 ###################################################################
@@ -88,11 +97,12 @@ S = Sten[1:]
 """
 Basis functions to be used in computing other tensors
 """
+@jit()
 def w(n,d):
     if n<0:
-        return float(d)
+        return np.float(d)
     else:
-        return d+2.*n
+        return np.float(d)+2.*n
      
 def ks(i,d):
     return 2.*math.sqrt(math.factorial(i)*math.factorial(i+d-1))/gamma(i + 0.5*d)
@@ -122,7 +132,7 @@ def Yval(i,j,k,l):
     return 0
 
 
-@jit(nopython=True)    
+@jit(nopython=True,nogil=True)    
 def Sval(i,j,k,l):
     if i<0 or j<0 or k<0 or l<0:
         return 0
@@ -135,7 +145,7 @@ def Sval(i,j,k,l):
                     return S[row][4]
         #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
         return 0
-@jit(nopython=True)      
+@jit(nopython=True,nogil=True)      
 def Rval(i,j):
     for row in range(R.shape[0]):
         if R[row][0]==i and R[row][1]==j:
@@ -146,7 +156,7 @@ def Rval(i,j):
     #   print("R[%d,%d] not found" % (i,j))    
     return 0
 
-@jit(nopython=True)    
+@jit(nopython=True,nogil=True)    
 def Tval(i):
     for row in range(T.shape[0]):
         if T[row][0]==i:
@@ -200,10 +210,10 @@ Inputs for the QP mode solver
 """
 
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
-a0 = 1.0
-a1 = 0.2
+a0 = np.float(1.0)
+a1 = np.float(0.21)
 N = T.shape[0]
-d = 3
+d = 3.
 
 
  
@@ -213,7 +223,7 @@ Functions for solving for QP coefficients
 
 # Function that returns the input values a0, a1 when i=0,1 and returns the variable
 # being optimized when i>1
-@jit(nopython=True)
+@jit(nopython=True,nogil=True)
 def alpha(i,x):
     if i==0:
         return a0
@@ -228,7 +238,7 @@ def alpha(i,x):
 
 
 # Use the QP equation (14) from arXiv:1507.08261
-@jit()
+@jit(nogil=True)
 def system(x):
     F = np.zeros_like(x)
     for i in range(N):
@@ -238,12 +248,12 @@ def system(x):
                 if j+k-i<N:
                     s = s +2.*Sval(j,k,j+k-i,i)*alpha(j,x)*alpha(k,x)*alpha(j+k-i,x) 
             r = r + 2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2
-        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+float(i)*(x[1]-x[0]))*alpha(i,x) + r + s
+        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+np.float(i)*(x[1]-x[0]))*alpha(i,x) + r + s
     return F
     
 
 # Compute the energy per mode using (5) from arXiv:1507.08261
-@jit()
+@jit(nogil=True)
 def energy(x):
     E = np.zeros_like(x)
     E[0] = 4*w(0,d)**2*a0**2
@@ -261,35 +271,34 @@ def energy(x):
 Solve for QP coefficients
 """
 
-@jit()
+@jit(nogil=True)
 def solves():
     t0 = time.process_time()
-    ainits = np.zeros(N)
-    ainits.fill(1.0e-5)
-    ainits[0]=ainits[1]=1.0e3
-    sol = newton_krylov(system,ainits,verbose=True)
+    ainits = np.zeros(N,dtype=np.float)
+    ainits[0]=ainits[1]=np.float(1.0e1)
+    sol = newton_krylov(system,ainits,verbose=True,f_tol=1e-12)
     print(sol)
+    print(energy(sol))
     t1=time.process_time()
     print("Calculation time =",t1-t0,"seconds")
-    print(energy(sol))
     print('\a')
     return sol
     
 sol = solves()
 
 
-with open("AdS4QP_j10_a02.dat","w") as s:
+with open("./data/AdS4QP_j50_a021.dat","w") as s:
     s.write("%d %.14e \n" % (0,a0))
     s.write("%d %.14e \n" % (1,a1))
     for i in range(2,len(sol)):
         s.write("%d %.14e \n" % (i,sol[i]))
     print("Wrote QP modes to %s" % s.name)
                         
-with open("AdS4QP_j10_a02E.dat","w") as f:
+with open("./data/AdS4QP_j50_a021E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
-   
+  
 
 
 
