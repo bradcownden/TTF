@@ -18,8 +18,9 @@ from sympy import lambdify, jacobi
 from sympy.functions.elementary.trigonometric import cos as symcos
 from sympy.core import diff
 from sympy.abc import t
-from scipy.optimize import newton_krylov, anderson
+from scipy.optimize import newton_krylov
 import time
+#from array import array
 from numba import jit
 
 
@@ -58,6 +59,7 @@ Sbin = np.fromfile("AdS4_S_j50.bin",Stype)
 """
 Convert binary data to sorted numpy arrays
 """
+
 @jit(nogil=True)
 def Tsort(Tbin):
     T = np.sort(Tbin)
@@ -100,9 +102,9 @@ Basis functions to be used in computing other tensors
 @jit()
 def w(n,d):
     if n<0:
-        return np.float(d)
+        return float(d)
     else:
-        return np.float(d)+2.*n
+        return float(d)+2.*n
      
 def ks(i,d):
     return 2.*math.sqrt(math.factorial(i)*math.factorial(i+d-1))/gamma(i + 0.5*d)
@@ -132,28 +134,20 @@ def Yval(i,j,k,l):
     return 0
 
 
-@jit(nopython=True,nogil=True)    
+@jit(nopython=True,nogil=True)
 def Sval(i,j,k,l):
     if i<0 or j<0 or k<0 or l<0:
         return 0
     else:
         for row in range(S.shape[0]):
             if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
-                if np.isnan(S[row][4]) == True:
-                    return 0
-                else:
-                    return S[row][4]
-        #print("S[%d][%d][%d][%d] not found" % (i,j,k,l))
-        return 0
-@jit(nopython=True,nogil=True)      
+                return S[row][4]
+
+@jit(nopython=True,nogil=True)     
 def Rval(i,j):
     for row in range(R.shape[0]):
         if R[row][0]==i and R[row][1]==j:
-            if np.isnan(R[row][2])==True:
-                return 0
-            else:
-                return R[row][2]
-    #   print("R[%d,%d] not found" % (i,j))    
+            return R[row][2]    
     return 0
 
 @jit(nopython=True,nogil=True)    
@@ -189,19 +183,7 @@ def A(i,j,d):
 def V(i,j,d):
     return quad(lambda x: (ep(i,d)(x))*(ep(j,d)(x))*math.sin(x)*math.cos(x),0,math.pi/2.)[0]
     
-#def T(i,d):
-#    return ((w(i,d)**2)*(Xval(i,i,i,i))/2. + 3*(Yval(i,i,i,i))/2. + 2*(w(i,d)**4)*W00(i,i,i,i,d) + 2*(w(i,d)**2)*W10(i,i,i,i,d) \
-#    - (w(i,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
-    
-#def R(i,j,d):
-#    return (((w(i,d)**2 + w(j,d)**2)/(w(j,d)**2 - w(i,d)**2))*((w(j,d)**2)*Xval(i,j,j,i) - (w(i,d)**2)*Xval(j,i,i,j))/2. \
-#                + 2*((w(j,d)**2)*Yval(i,j,i,j) - (w(i,d)**2)*Yval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
-#                + (Yval(i,i,j,j) + Yval(j,j,i,i))/2. \
-#                +(w(i,d)**2)*(w(j,d)**2)*(Xval(i,j,j,i) - Xval(j,i,j,i))/(w(j,d)**2 - w(i,d)**2) \
-#                + (w(i,d)**2)*(w(j,d)**2)*(W00(j,j,i,i,d) + W00(i,i,j,j,d)) \
-#                + (w(i,d)**2)*(W10(j,j,i,i,d)) + (w(j,d)**2)*(W10(i,i,j,j,d)) \
-#                - (w(j,d)**2)*(A(i,i,d) + (w(i,d)**2)*V(i,i,d)))
-   
+  
 ###################################################################
 ###################################################################
 
@@ -210,13 +192,23 @@ Inputs for the QP mode solver
 """
 
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
-a0 = np.float(1.0)
-a1 = np.float(0.21)
+a0 = float(1.0)
+a1 = float(0.35)
 N = T.shape[0]
 d = 3.
 
 
- 
+# Initial values for each alpha_j based on (B1) of arXiv:1507.08261
+@jit(nogil=True)
+def ainits(a1):
+    mu = math.log(3./(5.*a1))
+    ainits = [float(1.0e2),float(1.0e2)]
+    for i in range(2,N):
+        ainits.append(3.*math.exp(-mu*float(i))/(2.*float(i)+3.))
+    return ainits
+    
+ainits = ainits(a1)
+   
 """    
 Functions for solving for QP coefficients
 """
@@ -231,33 +223,30 @@ def alpha(i,x):
         return a1
     if i>1:
         return x[i]
-    if i<0:
-        #print("Index error in alpha, called for i=%d" % i)
-        return 0
-
 
 
 # Use the QP equation (14) from arXiv:1507.08261
 @jit(nogil=True)
 def system(x):
-    F = np.zeros_like(x)
+    F = np.zeros_like(x,dtype=np.float)
     for i in range(N):
         s = 0; r = 0
         for j in range(N):
-            for k in range(N):
-                if j+k-i<N:
-                    s = s +2.*Sval(j,k,j+k-i,i)*alpha(j,x)*alpha(k,x)*alpha(j+k-i,x) 
-            r = r + 2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2
-        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+np.float(i)*(x[1]-x[0]))*alpha(i,x) + r + s
+            if i!=j:
+                for k in range(N):
+                    if j+k-i<N and i<j+k and i!=k:
+                        s = s +2.*Sval(j,k,j+k-i,i)*alpha(j,x)*alpha(k,x)*alpha(j+k-i,x) 
+                r = r + 2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2
+        F[i] = 2.*Tval(i)*alpha(i,x)**3 + w(i,d)*(x[0]+float(i)*(x[1]-x[0]))*alpha(i,x) + r + s
     return F
     
 
 # Compute the energy per mode using (5) from arXiv:1507.08261
 @jit(nogil=True)
 def energy(x):
-    E = np.zeros_like(x)
-    E[0] = 4*w(0,d)**2*a0**2
-    E[1] = 4*w(1,d)**2*a1**2
+    E = np.zeros_like(x,dtype=np.float)    
+    E[0]= 4.*w(0,d)**2*a0**2
+    E[1] = 4.*w(1,d)**2*a1**2
     for i in range(2,len(x)):
         E[i] = 4.*w(i,d)**2*x[i]**2
     return E
@@ -274,12 +263,10 @@ Solve for QP coefficients
 @jit(nogil=True)
 def solves():
     t0 = time.process_time()
-    ainits = np.zeros(N,dtype=np.float)
-    ainits[0]=ainits[1]=np.float(1.0e1)
-    sol = newton_krylov(system,ainits,verbose=True,f_tol=1e-12)
+    sol = newton_krylov(system,ainits,verbose=True,f_tol=1.0e-20,f_rtol=1.0e-10)
     print(sol)
     print(energy(sol))
-    t1=time.process_time()
+    t1 = time.process_time()
     print("Calculation time =",t1-t0,"seconds")
     print('\a')
     return sol
@@ -287,18 +274,20 @@ def solves():
 sol = solves()
 
 
-with open("./data/AdS4QP_j50_a021.dat","w") as s:
+with open("./data/AdS4QP_j50_a035.dat","w") as s:
     s.write("%d %.14e \n" % (0,a0))
     s.write("%d %.14e \n" % (1,a1))
     for i in range(2,len(sol)):
         s.write("%d %.14e \n" % (i,sol[i]))
+    s.write("beta0 %.14e \n" % (sol[0]))
+    s.write("beta1 %.14e \n" % sol[1])
     print("Wrote QP modes to %s" % s.name)
                         
-with open("./data/AdS4QP_j50_a021E.dat","w") as f:
+with open("./data/AdS4QP_j50_a035E.dat","w") as f:
     for i in range(len(energy(sol))):
         f.write("%d %.14e \n" % (i,energy(sol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
-  
+
 
 
 
