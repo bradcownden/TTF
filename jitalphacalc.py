@@ -25,6 +25,7 @@ from numba import jit
 
 
 
+
 ###################################################################
 ###################################################################
 
@@ -32,7 +33,7 @@ from numba import jit
 Read in values for X,Y,S from recursion relations.
 """
 
-S = np.genfromtxt("d3S_L10.dat",dtype=np.float)
+#S = np.genfromtxt("d3S_L10.dat",dtype=np.float)
 #X = np.genfromtxt("d3X_L10.dat")
 #Y = np.genfromtxt("d3Y_L10.dat")
 
@@ -40,14 +41,14 @@ S = np.genfromtxt("d3S_L10.dat",dtype=np.float)
 Read in T,R from Mathematica output
 """
 
-R = np.genfromtxt("Mathematica_R.dat",dtype=np.float)
-T = np.genfromtxt("Mathematica_T.dat",dtype=np.float)
+#R = np.genfromtxt("Mathematica_R.dat",dtype=np.float)
+#T = np.genfromtxt("Mathematica_T.dat",dtype=np.float)
 
 
 """
 Read in S,R,T values from binary files
 """
-"""
+
 Ttype = np.dtype([('',np.int32),('',np.float)])
 Rtype = np.dtype([('',np.int32),('',np.int32),('',np.float)])
 Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np.float)])
@@ -55,7 +56,7 @@ Stype = np.dtype([('',np.int32),('',np.int32),('',np.int32),('',np.int32),('',np
 Rbin = np.fromfile("AdS4_R_j50.bin",Rtype)
 Tbin = np.fromfile("AdS4_T_j50.bin",Ttype)
 Sbin = np.fromfile("AdS4_S_j50.bin",Stype)
-"""
+
 """
 Convert binary data to sorted numpy arrays
 """
@@ -65,7 +66,7 @@ def Tsort(Tbin):
     T = np.sort(Tbin)
     Tten = np.zeros((1,2),dtype=np.float)
     for i in range(Tbin.shape[0]):
-        Tten = np.vstack((Tten,np.array([T[i][0],T[i][1]])))
+        Tten = np.vstack((Tten,np.array([T[i][0],T[i][1]],dtype=np.float)))
     return Tten[1:]
     
 
@@ -74,7 +75,7 @@ def Rsort(Rbin):
     R = np.sort(Rbin)
     Rten = np.zeros((1,3),dtype=np.float)
     for i in range(Rbin.shape[0]):
-        Rten = np.vstack((Rten,np.array([R[i][0],R[i][1],R[i][2]])))
+        Rten = np.vstack((Rten,np.array([R[i][0],R[i][1],R[i][2]],dtype=np.float)))
     return Rten[1:]
 
 
@@ -83,16 +84,16 @@ def Ssort(Sbin):
     S = np.sort(Sbin)
     Sten = np.zeros((1,5),dtype=np.float)
     for i in range(Sbin.shape[0]):
-        Sten = np.vstack((Sten,np.array([S[i][0],S[i][1],S[i][2],S[i][3],S[i][4]])))
+        Sten = np.vstack((Sten,np.array([S[i][0],S[i][1],S[i][2],S[i][3],S[i][4]],dtype=np.float)))
     return Sten[1:]
 
-"""
+
 T = Tsort(Tbin)
 R = Rsort(Rbin)
 S = Ssort(Sbin)
-"""
 
-print("Data read-in complete")
+
+print("Data read-in complete \n")
 
 ###################################################################
 ###################################################################
@@ -105,33 +106,25 @@ def w(n,d):
     if n<0:
         return d
     else:
-        return d+2.*n
+        return d+np.longdouble(2.*n)
 
-@jit(nogil=True)#nopython=True,
+@jit(nogil=True,nopython=True)
 def Sval(i,j,k,l):
-    #print("Asked for S(%d,%d,%d,%d)" % (i,j,k,l))
     for row in range(S.shape[0]):
         if S[row][0]==i and S[row][1]==j and S[row][2]==k and S[row][3]==l:
-            #print("Returning S(%d,%d,%d,%d) = %f" % (S[row][0],S[row][1],S[row][2],S[row][3],S[row][4]))
             return S[row][4]
-    #print("Failed to find S(%d,%d,%d,%d)" % (i,j,k,l))
 
-@jit(nogil=True)#nopython=True,     
+@jit(nogil=True,nopython=True)
 def Rval(i,j):
-    #print("Asked for R(%d,%d)" % (i,j))
     for row in range(R.shape[0]):
         if R[row][0]==i and R[row][1]==j:
-            #print("Returning R(%d,%d) = %f" % (R[row][0],R[row][1],R[row][2]))
             return R[row][2]
-    #print("Failed to find R(%d,%d)" % (i,j))
 
 
-@jit(nogil=True)#nopython=True,    
+@jit(nogil=True,nopython=True)
 def Tval(i):
-    #print("Asked for T(%d)" % i)
     for row in range(T.shape[0]):
         if T[row][0]==i:
-            #print("Returning T(%d) = %f" % (T[row][0],T[row][1]))
             return T[row][1]
 
 
@@ -170,10 +163,10 @@ Inputs for the QP mode solver
 """
 
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
-a0 = float(1.0)
-a1 = float(0.35)
+a0 = np.longdouble(1.0)
+a1 = np.longdouble(0.35)
 N = T.shape[0]
-d = float(3.)
+d = np.longdouble(3.)
 
 
 # Initial values for each alpha_j based on (B1) of arXiv:1507.08261
@@ -182,16 +175,17 @@ def inits(a0,a1):
     mu = math.log(3./(5.*a1))
     inits = [a0,a1]
     for i in range(2,N):
-        inits.append(3.*math.exp(-mu*float(i))/(2.*float(i)+3.))
+        inits.append(np.float(3.*math.exp(-mu*float(i))/(2.*float(i)+3.)))
     return inits
 
 ainits = inits(a0,a1)
 #print(ainits)
 
-@jit()
+# Initial values for beta0 and beta1 based on alpha_j seeds
+@jit(nogil=True)
 def makebees(seeds):
     #print("Constructing beta")
-    beta = [float(0.)]
+    beta = [np.float(0.)]
     for i in range(2):
         r = 0. ; s = 0.
         for j in range(N):
@@ -209,16 +203,22 @@ def makebees(seeds):
         #print("w =",w(i,d))
         #print("seeds[%d] =" % i,seeds[i])
         #print("beta[%d] value is" % i, (-2.*Tval(i)*(seeds[i])**3 - r - s)/(w(i,d)*seeds[i]))
-        beta.append((-2.*Tval(i)*(seeds[i])**3 - r - s)/(w(i,d)*seeds[i]))
+        beta.append(np.float((-2.*Tval(i)*(seeds[i])**3 - r - s)/(w(i,d)*seeds[i])))
     beta = beta[1:]
     return beta
         
 b = makebees(ainits)
-print("beta =",b)
+#print("beta =",b)
 
-  
+
+# Seed for the optimizer needs b0,b1 to be the first entries since a0, a1 are fixed  
 seeds = np.concatenate((b,ainits[2:]))
-print("seeds =",seeds)  
+print("seeds =",seeds,"\n")  
+  
+###################################################################
+###################################################################
+  
+  
   
 """    
 Functions for solving for QP coefficients
@@ -233,58 +233,32 @@ def alpha(i,x):
     if i==1:
         return a1
     if i>1:
-        return x[i]
+        return np.longdouble(x[i])
 
 
 
 # Use the QP equation (14) from arXiv:1507.08261
 @jit(nogil=True)
 def system(x):
-    F = [0.]
+    F = [np.longdouble(0.)]
     for i in range(N):
-        r = 0. ; s = 0.
+        r = np.longdouble(0.) ; s = np.longdouble(0.)
         for j in range(N):
             if i!=j:
-                r = r + 2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2
+                r = r + np.longdouble(2.*Rval(i,j)*alpha(i,x)*alpha(j,x)**2)
                 for k in range(N):
                     if k+j-i<N and k!=i and j+k>=i:
-                        s = s + 2.*Sval(j,k,j+k-i,i)*(alpha(j,x))*(alpha(k,x))*(alpha(j+k-i,x))
+                        s = s + np.longdouble(2.*Sval(j,k,j+k-i,i)*(alpha(j,x))*(alpha(k,x))*(alpha(j+k-i,x)))
         #print("r =",r)
         #print("s =",s)
-        F.append(2.*Tval(i)*(alpha(i,x))**3 + w(i,d)*(x[0]+float(i)*(x[1]-x[0]))*alpha(i,x) + r + s)
+        F.append(np.longdouble(2.*Tval(i)*(alpha(i,x))**3 + w(i,d)*(x[0]+float(i)*(x[1]-x[0]))*alpha(i,x) + r + s))
     return F[1:]
  
-
-
-    
-def ayes(i):
-    return seeds[i]
-
-@jit(nogil=True)
-def loop(b):
-    F = [0.]
-    for i in range(N):
-        r = 0. ; s = 0.
-        for j in range(N):
-            if i!=j:
-                r = r + 2.*Rval(i,j)*ayes(i)*ayes(j)**2
-                for k in range(N):
-                    if k+j-i<N and k!=i and j+k>=i:
-                        s = s + 2.*Sval(j,k,j+k-i,i)*(ayes(j))*(ayes(k))*(ayes(j+k-i))
-        #print("r =",r)
-        #print("s =",s)
-        F.append(2.*Tval(i)*(ayes(i))**3 + w(i,d)*(b[0]+float(i)*(b[1]-b[0]))*ayes(i) + r + s)
-    return F[1:]
-    
-            
-            
- 
-
 
 # Compute the energy per mode using (5) from arXiv:1507.08261
 @jit(nogil=True)
 def energy(x):
-    E = np.zeros_like(x,dtype=np.float)    
+    E = np.zeros_like(x,dtype=np.longdouble)    
     E[0]= 4.*w(0,d)**2*a0**2
     E[1] = 4.*w(1,d)**2*a1**2
     for i in range(2,len(x)):
@@ -303,6 +277,7 @@ Solve for QP coefficients
 @jit(nogil=True)
 def Ksolves():
     t0 = time.process_time()
+    print("Calculating alphas with newton_krylov method")
     sol = newton_krylov(system,seeds,verbose=True,f_rtol=1e-10)
     #print("sol")
     print("Krylov method \n",sol)
@@ -311,24 +286,28 @@ def Ksolves():
     print('\a')
     return sol
     
-Ksol = Ksolves()
+#Ksol = Ksolves()
 
 @jit(nogil=True)
 def Bsolves():
     t0 = time.process_time()
+    print("Calculating alphas with anderson method")
     sol = diagbroyden(system,seeds,f_rtol=1e-8)
     print("Anderson method \n",sol)
     print("Anderson calculation time =", time.process_time()-t0,"seconds")
+    print('\a')
     return sol
  
-Bsol = Bsolves()
+#Bsol = Bsolves()
    
 @jit(nogil=True)
 def Fsolves():
     t0 = time.process_time()
-    sol = fsolve(system,seeds,xtol=1e-10)
+    print("Calculating alphas with fsolve method")
+    sol = fsolve(system,seeds,xtol=1e-15)
     print("fsolve method \n",sol)
     print("fsolve calculation time =", time.process_time()-t0,"seconds")
+    print('\a')
     return sol
 
 Fsol = Fsolves()    
@@ -336,30 +315,32 @@ Fsol = Fsolves()
 @jit(nogil=True)
 def Rsolves():
     t0 = time.process_time()
-    sol = root(loop,seeds,method='krylov',tol=1e-10)
+    print("Calculating alphas with root/krylov method")
+    sol = root(system,seeds,method='krylov',tol=1e-15)
     print("root with krylov method \n",sol)
     print("root method calculation time =", time.process_time()-t0,"seconds")
+    print('\a')
     return sol
     
-#Rsol = Rsolves()
+Rsol = Rsolves()
 
 
 
-"""
-with open("./data/AdS4QP_j50_a035.dat","w") as s:
+
+with open("./data/AdS4QP_j10_a035_prime.dat","w") as s:
     s.write("%d %.14e \n" % (0,a0))
     s.write("%d %.14e \n" % (1,a1))
-    for i in range(2,len(sol)):
-        s.write("%d %.14e \n" % (i,sol[i]))
-    s.write("beta0 %.14e \n" % (sol[0]))
-    s.write("beta1 %.14e \n" % sol[1])
+    for i in range(2,len(Fsol)):
+        s.write("%d %.14e \n" % (i,Fsol[i]))
+    s.write("beta0 %.14e \n" % Fsol[0])
+    s.write("beta1 %.14e \n" % Fsol[1])
     print("Wrote QP modes to %s" % s.name)
                         
-with open("./data/AdS4QP_j50_a035E.dat","w") as f:
-    for i in range(len(energy(sol))):
-        f.write("%d %.14e \n" % (i,energy(sol)[i]))
+with open("./data/AdS4QP_j10_a035E_prime.dat","w") as f:
+    for i in range(len(energy(Fsol))):
+        f.write("%d %.14e \n" % (i,energy(Fsol)[i]))
     print("Wrote QP mode energies to %s" % f.name)
-"""
+
 
 
 
