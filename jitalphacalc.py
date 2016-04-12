@@ -22,6 +22,7 @@ from scipy.optimize import newton_krylov, diagbroyden, fsolve, root
 import time
 #from array import array
 from numba import jit
+import matplotlib.pyplot as plt
 
 
 
@@ -164,9 +165,10 @@ Inputs for the QP mode solver
 
 # Initial values for alpha_0 and alpha_1; maximum number N = j_max; dimension d
 a0 = np.longdouble(1.0)
-a1 = np.longdouble(0.35)
+a1 = np.longdouble(0.20)
 N = T.shape[0]
 d = np.longdouble(3.)
+
 
 
 # Initial values for each alpha_j based on (B1) of arXiv:1507.08261
@@ -251,19 +253,30 @@ def system(x):
                         s = s + np.longdouble(2.*Sval(j,k,j+k-i,i)*(alpha(j,x))*(alpha(k,x))*(alpha(j+k-i,x)))
         #print("r =",r)
         #print("s =",s)
-        F.append(np.longdouble(2.*Tval(i)*(alpha(i,x))**3 + w(i,d)*(x[0]+float(i)*(x[1]-x[0]))*alpha(i,x) + r + s))
+        F.append(np.longdouble(2.*Tval(i)*(alpha(i,x))**3 + w(i,d)*(x[0]+np.longdouble(i)*(x[1]-x[0]))*alpha(i,x) + r + s))
     return F[1:]
  
 
-# Compute the energy per mode using (5) from arXiv:1507.08261
+# Compute the energy per mode and total energy using (5) from arXiv:1507.08261
 @jit(nogil=True)
 def energy(x):
     E = np.zeros_like(x,dtype=np.longdouble)    
-    E[0]= 4.*w(0,d)**2*a0**2
+    E[0] = 4.*w(0,d)**2*a0**2
     E[1] = 4.*w(1,d)**2*a1**2
     for i in range(2,len(x)):
         E[i] = 4.*w(i,d)**2*x[i]**2
-    return E
+    return E, np.sum(E,dtype=np.longdouble)
+
+
+# Compute the total particle number using (6) from arXiv:1507.08261
+@jit(nogil=True)
+def enn(x):
+    enn = np.zeros_like(x,dtype=np.longdouble)
+    enn[0] = np.longdouble(4.*w(0,d)*a0**2)
+    enn[1] = np.longdouble(4.*w(1,d)*a1**2)
+    for i in range(2,len(x)):
+        enn[i] = np.longdouble(4.*w(1,d)*x[i]**2)
+    return np.sum(enn,dtype=np.longdouble)
 
 
 ###################################################################
@@ -304,13 +317,13 @@ def Bsolves():
 def Fsolves():
     t0 = time.process_time()
     print("Calculating alphas with fsolve method")
-    sol = fsolve(system,seeds,xtol=1e-15)
+    sol = fsolve(system,seeds,xtol=1e-14)
     print("fsolve method \n",sol)
     print("fsolve calculation time =", time.process_time()-t0,"seconds")
     print('\a')
     return sol
 
-Fsol = Fsolves()    
+#Fsol = Fsolves()    
 
 @jit(nogil=True)
 def Rsolves():
@@ -325,20 +338,20 @@ def Rsolves():
 Rsol = Rsolves()
 
 
+energy,E = energy(Rsol.x)
 
-
-with open("./data/AdS4QP_j10_a035_prime.dat","w") as s:
+with open("./data/AdS4QP_j50_a020.dat","w") as s:
     s.write("%d %.14e \n" % (0,a0))
     s.write("%d %.14e \n" % (1,a1))
-    for i in range(2,len(Fsol)):
-        s.write("%d %.14e \n" % (i,Fsol[i]))
-    s.write("beta0 %.14e \n" % Fsol[0])
-    s.write("beta1 %.14e \n" % Fsol[1])
+    for i in range(2,len(Rsol.x)):
+        s.write("%d %.14e \n" % (i,Rsol.x[i]))
+    s.write("beta0 %.14e \n" % Rsol.x[0])
+    s.write("beta1 %.14e \n" % Rsol.x[1])
     print("Wrote QP modes to %s" % s.name)
                         
-with open("./data/AdS4QP_j10_a035E_prime.dat","w") as f:
-    for i in range(len(energy(Fsol))):
-        f.write("%d %.14e \n" % (i,energy(Fsol)[i]))
+with open("./data/AdS4QP_j50_a020E.dat","w") as f:
+    for i in range(len(energy)):
+        f.write("%d %.14e \n" % (i,energy[i]))
     print("Wrote QP mode energies to %s" % f.name)
 
 
@@ -349,31 +362,21 @@ with open("./data/AdS4QP_j10_a035E_prime.dat","w") as f:
 
 
 """
-Test case of N=3
+Create plot of energy per mode for given T=E/N
 """
 
-def f(x):
-    f = np.zeros(3)    
+def eplot(x):
+    T = E/(enn(Rsol.x))
+    plt.plot(x,'.b',label="T = %f" % T)
+    plt.xlabel(r"$j$")
+    plt.ylabel(r"$E_j$")
+    plt.title("Energy per mode")
+    plt.yscale('log')
+    plt.legend()
+    plt.show()
+
+eplot(energy)
     
-    f[0] = 2.*Tval(0) + 2.*(Rval(0,1)*(0.2**2) + Rval(0,2)*x[2]**2) + w(0,d)*x[0] \
-    + 2.*(Sval(0,1,1,0)*(0.2**2) + Sval(0,2,2,0)*x[2]**2 + Sval(1,0,1,0)*(0.2**2) \
-    + Sval(1,1,2,0)*x[2]*(0.2**2) + Sval(2,0,2,0)*x[2]**2)
-    
-    f[1] = 2.*Tval(1)*(0.2**3) + 2.*(Rval(1,0)*0.2 + Rval(1,2)*0.2*x[2]**2) \
-    + w(1,d)*x[1]*0.2 + 2.*(Sval(0,1,0,1)*0.2 + Sval(0,2,1,1)*0.2*x[2] + Sval(1,0,0,1)*0.2 \
-    + Sval(1,1,1,1)*(0.2**3) + Sval(1,2,2,1)*(0.2)*x[2]**2 + Sval(2,0,1,1)*0.2*x[2] \
-    + Sval(2,1,2,1)*0.2*x[2]**2)
-    
-    f[2] = 2.*Tval(2)*x[2]**3 + 2.*(Rval(2,0) + Rval(2,1)*0.2**2)*x[2] \
-    + w(2,d)*(x[0] + 2.*(x[1]-x[0]))*x[2] + 2.*(Sval(0,2,0,2)*x[2] + Sval(1,1,0,2)*(0.2**2) \
-    + Sval(1,2,1,2)*(0.2**2)*x[2] + Sval(2,0,0,2)*x[2] + Sval(2,1,1,2)*(0.2**2)*x[2] \
-    + Sval(2,2,2,2)*(x[2]**3))
-    
-    return f
-    
-#x0 = np.ones(3)
-#sol = newton_krylov(f,x0)
-#print("Test case with explicit formulas [beta_0, beta_1, alpha_2] = [%.10e, %.10e, %.10e]" % (sol[0],sol[1],sol[2]))
 
 ###################################################################
 ###################################################################
